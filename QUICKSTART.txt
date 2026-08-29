@@ -1,0 +1,117 @@
+=====================================================
+ Football League Manager v2.0 - Quick Start
+=====================================================
+
+1. Extract the ZIP to a folder (e.g. C:\Users\USER\Desktop\football-app-v2)
+
+2. Open PowerShell in that folder:
+   cd C:\Users\USER\Desktop\football-app-v2
+
+3. Install + start (one of these):
+   powershell -ExecutionPolicy Bypass -File .\install.ps1
+   OR
+   npm install
+   npm start
+
+4. Open browser: http://localhost:3000
+
+5. First account you create = ADMIN automatically
+
+
+=====================================================
+ Features
+=====================================================
+
+- Leagues with season, country, status, promoted/relegated counts
+- Sections (groups) within a league
+- Teams with: name, short name, color (preset + custom picker), 
+  logo (file upload OR URL), founded year, status
+- Matchdays (rounds) - manual or auto-generated
+- Auto fixture generation (circle method with home/away alternation)
+- Matches with home/away, score, status, datetime, venue
+- Auto-calculated standings with:
+  * Win/draw/loss/goals/points
+  * Goal difference
+  * Point deduction column
+  * Promoted/relegated markers
+- Bulk delete: matchdays + matches + reset team stats
+- Delete individual match from matchday page
+- Arabic RTL UI with Cairo font
+- Cookie-based auth (no JWT)
+- Single-file SQLite DB (data/football.db)
+- File upload for team logos (public/uploads/teams/)
+
+
+=====================================================
+ Requirements
+=====================================================
+
+- Node.js 22+ (uses built-in `node:sqlite`)
+  Download: https://nodejs.org
+- That's it. No Docker. No Python. No native build tools.
+
+
+=====================================================
+ Stack
+=====================================================
+
+- Express 4
+- EJS + express-ejs-layouts
+- Node 22+ built-in SQLite (no better-sqlite3, no compile)
+- Multer (logo upload)
+- Tailwind via CDN
+- cookie-parser
+- No bcryptjs (uses built-in crypto.scrypt)
+
+
+=====================================================
+ Reset
+=====================================================
+
+- Reset all data: delete data\football.db and restart server
+- Reset all matches in a section: section page -> "Delete all matches"
+  (requires typing DELETE to confirm)
+- Reset uploaded logos: delete public\uploads\teams\*.png
+
+
+=====================================================
+ Project structure
+=====================================================
+
+football-app-v2/
+  server.js
+  package.json
+  install.ps1
+  start.bat
+  lib/
+    schema.sql       DB tables
+    db.js            node:sqlite connection
+    auth.js          scrypt + cookie session
+    helpers.js
+    stats.js         standings + recalc
+    fixtures.js      circle method generator
+    upload.js        multer config
+  routes/
+    auth.js
+    leagues.js
+    sections.js
+    teams.js
+    matchdays.js
+    matches.js
+    fixtures.js
+    index.js
+  views/
+    layouts/main.ejs
+    auth/{login,register}.ejs
+    leagues/{index,new,show,edit}.ejs
+    sections/{new,show,edit}.ejs
+    teams/{new,edit}.ejs
+    matches/{new,edit}.ejs
+    matchdays/show.ejs
+    standings/index.ejs
+    home.ejs, error.ejs
+  public/
+    css/style.css
+    js/app.js
+    uploads/teams/   (created on first upload)
+  data/football.db   (created on first run)

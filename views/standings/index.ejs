@@ -1,0 +1,371 @@
+<div>
+  <a href="/leagues/<%= league.id %>/sections/<%= section.id %>" class="text-sm text-slate-500 hover:text-slate-700">← <%= section.name %></a>
+  <header class="mt-3 flex flex-wrap items-start justify-between gap-4">
+    <div>
+      <h1 class="text-3xl font-bold text-slate-900">📊 ترتيب متقدم - <%= section.name %></h1>
+      <p class="mt-1 text-sm text-slate-600"><%= league.name %> · <%= league.season %> · <%= totalRounds %> جولة</p>
+    </div>
+    <form method="GET" class="flex items-center gap-2">
+      <label class="text-sm text-slate-700">آخر</label>
+      <input type="number" name="formN" min="1" max="20" value="<%= formN %>" class="w-16 rounded-lg border border-slate-300 px-2 py-1 text-center text-sm focus:border-emerald-500 focus:outline-none focus:ring-1 focus:ring-emerald-500">
+      <label class="text-sm text-slate-700">مباريات في السجل</label>
+      <button type="submit" class="rounded-lg bg-slate-700 px-3 py-1.5 text-xs font-semibold text-white hover:bg-slate-800">تطبيق</button>
+    </form>
+  </header>
+
+  <% const renderTable = (title, table, accentClass) => { %>
+    <section class="mt-8">
+      <h2 class="text-xl font-bold text-slate-900 mb-3 flex items-center gap-2">
+        <span class="h-2 w-2 rounded-full <%= accentClass %>"></span>
+        <%= title %>
+      </h2>
+      <div class="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
+        <table class="w-full text-sm">
+          <thead class="bg-slate-100 text-xs uppercase text-slate-700">
+            <tr>
+              <th class="px-3 py-3 text-center">#</th>
+              <th class="px-3 py-3 text-right">الفريق</th>
+              <th class="px-2 py-3 text-center">لعب</th>
+              <th class="px-2 py-3 text-center">فاز</th>
+              <th class="px-2 py-3 text-center">تعادل</th>
+              <th class="px-2 py-3 text-center">خسر</th>
+              <th class="px-2 py-3 text-center">له</th>
+              <th class="px-2 py-3 text-center">عليه</th>
+              <th class="px-2 py-3 text-center">+/-</th>
+              <th class="px-2 py-3 text-center">خصم</th>
+              <th class="px-2 py-3 text-center font-bold">نقاط</th>
+              <th class="px-3 py-3 text-center" title="نتائج آخر <%= formN %> مباريات">السجل</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-slate-100">
+            <% table.forEach(t => { %>
+              <tr class="<%= t.is_promoted ? 'bg-emerald-50' : t.is_relegated ? 'bg-red-50' : '' %>">
+                <td class="px-3 py-2.5 text-center font-bold <%= t.is_promoted ? 'text-emerald-700' : t.is_relegated ? 'text-red-700' : 'text-slate-700' %>"><%= t.rank %></td>
+                <td class="px-3 py-2.5">
+                  <div class="flex items-center gap-2">
+                    <% if (t.logo) { %>
+                      <img src="<%= t.logo %>" alt="" class="h-7 w-7 rounded-full object-cover ring-1 ring-slate-200 shrink-0" onerror="this.style.display='none'">
+                    <% } else { %>
+                      <div class="h-7 w-7 rounded-full text-[10px] font-bold text-white flex items-center justify-center shrink-0" style="background-color: <%= t.color || '#64748b' %>">
+                        <%= (t.short_name || t.name).slice(0, 2).toUpperCase() %>
+                      </div>
+                    <% } %>
+                    <span class="font-semibold text-slate-900 truncate"><%= t.name %></span>
+                    <% if (t.is_promoted) { %><span class="shrink-0 rounded-full bg-emerald-200 px-2 py-0.5 text-[10px] font-bold text-emerald-800">▲</span><% } %>
+                    <% if (t.is_relegated) { %><span class="shrink-0 rounded-full bg-red-200 px-2 py-0.5 text-[10px] font-bold text-red-800">▼</span><% } %>
+                  </div>
+                </td>
+                <td class="px-2 py-2.5 text-center text-slate-700"><%= t.played %></td>
+                <td class="px-2 py-2.5 text-center text-slate-700"><%= t.won %></td>
+                <td class="px-2 py-2.5 text-center text-slate-700"><%= t.drawn %></td>
+                <td class="px-2 py-2.5 text-center text-slate-700"><%= t.lost %></td>
+                <td class="px-2 py-2.5 text-center text-slate-700"><%= t.gf %></td>
+                <td class="px-2 py-2.5 text-center text-slate-700"><%= t.ga %></td>
+                <td class="px-2 py-2.5 text-center text-slate-700 font-medium"><%= t.goal_diff > 0 ? '+' : '' %><%= t.goal_diff %></td>
+                <td class="px-2 py-2.5 text-center <%= t.point_deduction > 0 ? 'text-red-700 font-semibold' : 'text-slate-400' %>">
+                  <% if (t.point_deduction > 0) { %>-<%= t.point_deduction %><% } else { %>—<% } %>
+                </td>
+                <td class="px-2 py-2.5 text-center font-bold text-slate-900"><%= t.effective_points %></td>
+                <td class="px-3 py-2.5 text-center">
+                  <div class="inline-flex gap-0.5" dir="ltr">
+                    <% (t.form || []).forEach(r => { %>
+                      <% if (r === 'W') { %>
+                        <span class="flex h-5 w-5 items-center justify-center rounded-full bg-emerald-500 text-[10px] font-bold text-white" title="فوز">ف</span>
+                      <% } else if (r === 'D') { %>
+                        <span class="flex h-5 w-5 items-center justify-center rounded-full bg-slate-400 text-[10px] font-bold text-white" title="تعادل">ت</span>
+                      <% } else { %>
+                        <span class="flex h-5 w-5 items-center justify-center rounded-full bg-red-500 text-[10px] font-bold text-white" title="خسارة">خ</span>
+                      <% } %>
+                    <% }); %>
+                    <% if (!(t.form && t.form.length)) { %>
+                      <span class="text-xs text-slate-400">—</span>
+                    <% } %>
+                  </div>
+                </td>
+              </tr>
+            <% }); %>
+          </tbody>
+        </table>
+      </div>
+    </section>
+  <% }; %>
+
+  <% if (overall.length === 0) { %>
+    <div class="mt-8 rounded-2xl border-2 border-dashed border-slate-300 bg-white p-10 text-center">
+      <div class="text-5xl mb-3">⚽</div>
+      <h3 class="font-semibold text-slate-900">لا توجد فرق</h3>
+      <p class="mt-1 text-sm text-slate-600">أضف فرق للقسم لرؤية الترتيب</p>
+    </div>
+  <% } else { %>
+    <% renderTable('الترتيب العام', overall, 'bg-emerald-500'); %>
+    <% if (firstLeg.length > 0) { %>
+      <% renderTable('ترتيب مرحلة الذهاب (' + halfRounds + ' جولات)', firstLeg, 'bg-blue-500'); %>
+    <% } %>
+    <% if (returnLeg.length > 0) { %>
+      <% renderTable('ترتيب مرحلة الإياب (' + (totalRounds - halfRounds) + ' جولات)', returnLeg, 'bg-purple-500'); %>
+    <% } %>
+
+    <%# Home/Away splits %>
+    <% 
+      const hasHomeAway = overall.some(t => t.home.played > 0 || t.away.played > 0);
+    %>
+    <% if (hasHomeAway) { %>
+      <section class="mt-10">
+        <h2 class="text-xl font-bold text-slate-900 mb-3">🏟 أداء في الميدان vs ✈️ خارج الميدان</h2>
+        <div class="overflow-x-auto rounded-xl border border-slate-200 bg-white shadow-sm">
+          <table class="w-full text-sm">
+            <thead>
+              <tr class="bg-slate-50 text-xs">
+                <th class="px-3 py-2 text-right text-xs font-semibold text-slate-600">الفريق</th>
+                <th colspan="4" class="px-2 py-2 text-center bg-emerald-50 text-emerald-800">🏟 في الميدان</th>
+                <th colspan="4" class="px-2 py-2 text-center bg-blue-50 text-blue-800">✈️ خارج الميدان</th>
+                <th colspan="2" class="px-2 py-2 text-center bg-slate-50 text-slate-700">المقارنة</th>
+              </tr>
+              <tr class="bg-slate-50 text-[10px] text-slate-500">
+                <th class="px-2"></th>
+                <th class="px-1 py-1 text-center">لعب</th>
+                <th class="px-1 py-1 text-center text-emerald-700">ف</th>
+                <th class="px-1 py-1 text-center text-slate-600">ت</th>
+                <th class="px-1 py-1 text-center text-red-700">خ</th>
+                <th class="px-1 py-1 text-center">لعب</th>
+                <th class="px-1 py-1 text-center text-emerald-700">ف</th>
+                <th class="px-1 py-1 text-center text-slate-600">ت</th>
+                <th class="px-1 py-1 text-center text-red-700">خ</th>
+                <th class="px-1 py-1 text-center">نقاط ميدان</th>
+                <th class="px-1 py-1 text-center">نقاط خارج</th>
+              </tr>
+            </thead>
+            <tbody>
+              <% overall.forEach(t => { %>
+                <tr class="border-t border-slate-100 hover:bg-slate-50">
+                  <td class="px-3 py-2 text-right text-sm font-semibold" style="color: <%= t.color || '#475569' %>;">
+                    <% if (t.color) { %><span class="inline-block h-2 w-2 rounded-full mr-1" style="background-color: <%= t.color %>"></span><% } %>
+                    <%= t.name %>
+                  </td>
+                  <td class="px-1 py-1.5 text-center text-slate-700 text-xs"><%= t.home.played %></td>
+                  <td class="px-1 py-1.5 text-center text-emerald-700 font-bold text-xs"><%= t.home.won %></td>
+                  <td class="px-1 py-1.5 text-center text-slate-600 text-xs"><%= t.home.drawn %></td>
+                  <td class="px-1 py-1.5 text-center text-red-700 text-xs"><%= t.home.lost %></td>
+                  <td class="px-1 py-1.5 text-center text-slate-700 text-xs"><%= t.away.played %></td>
+                  <td class="px-1 py-1.5 text-center text-emerald-700 font-bold text-xs"><%= t.away.won %></td>
+                  <td class="px-1 py-1.5 text-center text-slate-600 text-xs"><%= t.away.drawn %></td>
+                  <td class="px-1 py-1.5 text-center text-red-700 text-xs"><%= t.away.lost %></td>
+                  <td class="px-1 py-1.5 text-center font-bold text-emerald-700 text-xs"><%= t.home.points %></td>
+                  <td class="px-1 py-1.5 text-center font-bold text-blue-700 text-xs"><%= t.away.points %></td>
+                </tr>
+              <% }); %>
+            </tbody>
+          </table>
+        </div>
+        <p class="mt-2 text-[11px] text-slate-400">مقارنة النقاط في الميدان vs خارج الميدان تساعدك تقيّم قوة كل فريق</p>
+      </section>
+    <% } %>
+
+    <div class="mt-4 flex flex-wrap gap-3 text-xs text-slate-600">
+      <span class="flex items-center gap-1.5"><span class="h-3 w-3 rounded bg-emerald-200 ring-1 ring-emerald-300"></span>صاعد</span>
+      <span class="flex items-center gap-1.5"><span class="h-3 w-3 rounded bg-red-200 ring-1 ring-red-300"></span>نازل</span>
+      <span class="flex items-center gap-1.5"><span class="h-3 w-3 rounded bg-emerald-500"></span>ف = فوز</span>
+      <span class="flex items-center gap-1.5"><span class="h-3 w-3 rounded bg-slate-400"></span>ت = تعادل</span>
+      <span class="flex items-center gap-1.5"><span class="h-3 w-3 rounded bg-red-500"></span>خ = خسارة</span>
+    </div>
+
+    <%# Additional Stats (biggest win, clean sheets, streaks) %>
+    <% 
+      const hasAnyStats = Object.values(additionalStats).some(s => s.totalMatches > 0);
+    %>
+    <% if (hasAnyStats) { %>
+      <section class="mt-10">
+        <h2 class="text-xl font-bold text-slate-900 mb-3">🏆 إحصائيات متقدمة</h2>
+        <div class="overflow-x-auto rounded-xl border border-slate-200 bg-white shadow-sm">
+          <table class="w-full text-sm">
+            <thead>
+              <tr class="bg-slate-50 text-xs">
+                <th class="px-3 py-2 text-right text-xs font-semibold text-slate-600">الفريق</th>
+                <th class="px-2 py-2 text-center text-emerald-700" title="أكبر فوز">🥇 أكبر فوز</th>
+                <th class="px-2 py-2 text-center text-red-700" title="أكبر خسارة">💀 أكبر خسارة</th>
+                <th class="px-2 py-2 text-center text-slate-700" title="مباريات بدون استقبال">🧤 شباك نظيفة</th>
+                <th class="px-2 py-2 text-center text-slate-500" title="مباريات بدون تسجيل">❌ فشل تسجيل</th>
+                <th class="px-2 py-2 text-center" title="السلسلة الحالية">🔥 الحالية</th>
+                <th class="px-2 py-2 text-center text-emerald-700" title="أطول سلسلة انتصارات">⭐ أطول فوز</th>
+                <th class="px-2 py-2 text-center text-blue-700" title="أطول سلسلة بدون خسارة">🛡 أطول عدم خسارة</th>
+                <th class="px-2 py-2 text-center" title="آخر 5 نتائج">السجل</th>
+              </tr>
+            </thead>
+            <tbody>
+              <% overall.forEach(t => { 
+                  const s = additionalStats[t.id] || {};
+                  const streakColors = { W: 'text-emerald-700', D: 'text-slate-600', L: 'text-red-700' };
+                  const streakLabels = { W: 'فوز', D: 'تعادل', L: 'خسارة' };
+              %>
+                <tr class="border-t border-slate-100 hover:bg-slate-50">
+                  <td class="px-3 py-2 text-right text-sm font-semibold" style="color: <%= t.color || '#475569' %>;">
+                    <% if (t.color) { %><span class="inline-block h-2 w-2 rounded-full mr-1" style="background-color: <%= t.color %>"></span><% } %>
+                    <%= t.name %>
+                  </td>
+                  <td class="px-2 py-1.5 text-center text-xs">
+                    <% if (s.biggestWin) { %>
+                      <span class="font-bold text-emerald-700"><%= s.biggestWin.score %></span>
+                      <div class="text-[10px] text-slate-500">vs <%= s.biggestWin.against %></div>
+                    <% } else { %>
+                      <span class="text-slate-300">—</span>
+                    <% } %>
+                  </td>
+                  <td class="px-2 py-1.5 text-center text-xs">
+                    <% if (s.biggestLoss) { %>
+                      <span class="font-bold text-red-700"><%= s.biggestLoss.score %></span>
+                      <div class="text-[10px] text-slate-500">vs <%= s.biggestLoss.against %></div>
+                    <% } else { %>
+                      <span class="text-slate-300">—</span>
+                    <% } %>
+                  </td>
+                  <td class="px-2 py-1.5 text-center font-bold text-slate-700 text-xs"><%= s.cleanSheets || 0 %></td>
+                  <td class="px-2 py-1.5 text-center text-slate-500 text-xs"><%= s.failedToScore || 0 %></td>
+                  <td class="px-2 py-1.5 text-center text-xs">
+                    <% if (s.currentStreak && s.currentStreak.type) { %>
+                      <span class="font-bold <%= streakColors[s.currentStreak.type] %>"><%= s.currentStreak.count %><%= s.currentStreak.type %></span>
+                      <div class="text-[10px] text-slate-500"><%= streakLabels[s.currentStreak.type] %></div>
+                    <% } else { %>
+                      <span class="text-slate-300">—</span>
+                    <% } %>
+                  </td>
+                  <td class="px-2 py-1.5 text-center font-bold text-emerald-700 text-xs"><%= s.longestWinStreak || 0 %></td>
+                  <td class="px-2 py-1.5 text-center font-bold text-blue-700 text-xs"><%= s.longestUnbeaten || 0 %></td>
+                  <td class="px-2 py-1.5 text-center font-mono text-xs tracking-tight">
+                    <% if (s.formString) { %>
+                      <% s.formString.split('').forEach(function(c) { %>
+                        <span class="<%= c === 'W' ? 'text-emerald-700 font-bold' : c === 'D' ? 'text-slate-500' : 'text-red-700 font-bold' %>"><%= c %></span>
+                      <% }); %>
+                    <% } else { %>
+                      <span class="text-slate-300">—</span>
+                    <% } %>
+                  </td>
+                </tr>
+              <% }); %>
+            </tbody>
+          </table>
+        </div>
+        <p class="mt-2 text-[11px] text-slate-400">W = فوز · D = تعادل · L = خسارة · السلسلة الحالية من آخر نتيجة</p>
+      </section>
+    <% } %>
+
+    <%# Ranking evolution chart %>
+    <% if (evolution.matchdays.length >= 2 && evolution.teams.length >= 2) { %>
+      <section class="mt-8 rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+        <div class="flex items-center justify-between mb-3">
+          <div>
+            <h2 class="text-lg font-bold text-slate-900">📈 تطور الترتيب عبر الجولات</h2>
+            <p class="text-xs text-slate-500 mt-0.5">المركز يتغير مع كل نتيجة مسجلة</p>
+          </div>
+          <div class="flex gap-1 text-xs">
+            <button type="button" id="evShowAll" class="rounded-lg bg-slate-700 px-2.5 py-1 text-white font-medium">الكل</button>
+            <select id="evTeamSelect" class="rounded-lg border border-slate-300 px-2 py-1 text-xs">
+              <option value="">عرض فريق واحد...</option>
+              <% evolution.teams.forEach(function(t) { %>
+                <option value="<%= t.id %>"><%= t.name %></option>
+              <% }); %>
+            </select>
+          </div>
+        </div>
+        <div class="relative" style="height: 380px;">
+          <canvas id="evolutionChart"></canvas>
+        </div>
+        <p class="text-[11px] text-slate-400 mt-2">المحور الأفقي = رقم الجولة · المحور العمودي = المركز (1 = أول)</p>
+      </section>
+
+      <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+      <script>
+        (function() {
+          var rawMatchdays = <%- JSON.stringify(evolution.matchdays) %>;
+          var matchdays = rawMatchdays.map(function(m) { return m.name || ('جولة ' + m.order); });
+          var teams = <%- JSON.stringify(evolution.teams) %>;
+          var ranks = <%- JSON.stringify(evolution.ranks) %>;
+          var rankMap = {};
+          ranks.forEach(function(r) { rankMap[r[0]] = r[1]; });
+
+          // Distinct color palette (used when teams have similar/default colors)
+          var palette = [
+            '#dc2626', '#2563eb', '#16a34a', '#eab308', '#9333ea', '#ea580c',
+            '#0891b2', '#db2777', '#65a30d', '#7c3aed', '#0d9488', '#f59e0b',
+            '#be123c', '#1d4ed8', '#15803d', '#a16207', '#6d28d9', '#c2410c'
+          ];
+          // Track colors already used to avoid duplicates
+          var usedColors = {};
+          teams.forEach(function(t) { if (t.color) usedColors[t.color] = true; });
+
+          function pickColor(idx) {
+            // Use team color if unique; otherwise assign from palette
+            var t = teams[idx];
+            if (t.color && t.color !== '#64748b' && t.color !== '#2563eb') return t.color;
+            return palette[idx % palette.length];
+          }
+
+          var datasets = teams.map(function(t, i) {
+            var c = pickColor(i);
+            return {
+              label: t.name,
+              data: rankMap[t.id] || [],
+              borderColor: c,
+              backgroundColor: c + '20',
+              borderWidth: 2,
+              pointRadius: 4,
+              pointHoverRadius: 6,
+              tension: 0.2,
+              fill: false,
+              teamId: t.id
+            };
+          });
+
+          var ctx = document.getElementById('evolutionChart').getContext('2d');
+          var chart = new Chart(ctx, {
+            type: 'line',
+            data: { labels: matchdays, datasets: datasets },
+            options: {
+              responsive: true,
+              maintainAspectRatio: false,
+              scales: {
+                y: {
+                  reverse: true,
+                  min: 1,
+                  title: { display: true, text: 'المركز', font: { size: 12 } },
+                  ticks: { stepSize: 1, font: { size: 11 } }
+                },
+                x: {
+                  title: { display: true, text: 'الجولة', font: { size: 12 } },
+                  ticks: { font: { size: 11 } }
+                }
+              },
+              plugins: {
+                legend: { position: 'bottom', labels: { font: { size: 11 }, boxWidth: 12, padding: 8 } },
+                tooltip: {
+                  callbacks: {
+                    label: function(ctx) {
+                      return ctx.dataset.label + ': المركز ' + ctx.parsed.y;
+                    }
+                  }
+                }
+              }
+            }
+          });
+
+          // Map dataset index → teamId (for reliable filtering)
+          var teamIdByIndex = teams.map(function(t) { return t.id; });
+
+          function filterChart(tid) {
+            chart.data.datasets.forEach(function(ds, i) {
+              ds.hidden = (tid !== '' && teamIdByIndex[i] !== tid);
+            });
+            chart.update();
+          }
+
+          document.getElementById('evTeamSelect').addEventListener('change', function() {
+            filterChart(this.value);
+          });
+          document.getElementById('evShowAll').addEventListener('click', function() {
+            document.getElementById('evTeamSelect').value = '';
+            filterChart('');
+          });
+        })();
+      </script>
+    <% } %>
+  <% } %>
+</div>

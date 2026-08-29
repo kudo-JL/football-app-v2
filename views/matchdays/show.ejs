@@ -1,0 +1,86 @@
+<div>
+  <a href="/leagues/<%= leagueId %>/sections/<%= section.id %>" class="text-sm text-slate-500 hover:text-slate-700">← <%= section.name %></a>
+  <header class="mt-3 flex flex-wrap items-start justify-between gap-4">
+    <div>
+      <h1 class="text-3xl font-bold text-slate-900"><%= matchday.name %></h1>
+      <p class="mt-1 text-sm text-slate-600"><%= matches.length %> مباراة</p>
+    </div>
+    <div class="flex gap-2">
+      <a href="/leagues/<%= leagueId %>/sections/<%= section.id %>/matches/new?matchdayId=<%= matchday.id %>" class="rounded-lg bg-emerald-600 px-4 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-emerald-700">+ مباراة</a>
+      <form action="/leagues/<%= leagueId %>/sections/<%= section.id %>/matchdays/<%= matchday.id %>/delete" method="POST" onsubmit="return confirm('حذف الجولة وكل مبارياتها؟')" class="inline">
+        <button class="rounded-lg border border-red-300 bg-white px-4 py-2.5 text-sm font-semibold text-red-700 hover:bg-red-50">🗑️ حذف الجولة</button>
+      </form>
+    </div>
+  </header>
+
+  <% if (teams.length < 2) { %>
+    <div class="mt-8 rounded-lg bg-amber-50 border border-amber-200 p-4 text-sm text-amber-800">
+      ⚠️ أضف فريقين على الأقل لإنشاء مباريات.
+    </div>
+  <% } %>
+
+  <% if (matches.length === 0) { %>
+    <div class="mt-8 rounded-2xl border-2 border-dashed border-slate-300 bg-white p-10 text-center">
+      <div class="text-5xl mb-3">📅</div>
+      <h3 class="font-semibold text-slate-900">لا توجد مباريات</h3>
+      <a href="/leagues/<%= leagueId %>/sections/<%= section.id %>/matches/new?matchdayId=<%= matchday.id %>" class="mt-4 inline-block rounded-lg bg-emerald-600 px-4 py-2 text-sm font-semibold text-white">+ أضف مباراة</a>
+    </div>
+  <% } else { %>
+    <div class="mt-8 space-y-2">
+      <% matches.forEach(m => { %>
+        <div class="group rounded-xl border border-slate-200 bg-white p-3 shadow-sm hover:shadow-md transition">
+          <div class="flex items-center gap-2">
+            <!-- Match content (clickable) -->
+            <a href="/leagues/<%= leagueId %>/sections/<%= section.id %>/matches/<%= m.id %>/edit" class="flex items-center gap-2 flex-1 min-w-0">
+              <!-- Home team (RIGHT in RTL) -->
+              <div class="flex items-center gap-2 min-w-0 flex-1 justify-end">
+                <span class="text-sm font-semibold text-slate-900 truncate"><%= m.home_name %></span>
+                <div class="h-7 w-7 shrink-0 rounded-full text-[10px] font-bold text-white flex items-center justify-center" style="background-color: <%= m.home_color || '#64748b' %>">
+                  <%= (m.home_short || m.home_name || '?').slice(0, 2).toUpperCase() %>
+                </div>
+              </div>
+
+              <!-- Score (CENTER) -->
+              <div class="shrink-0 px-2 min-w-[60px] text-center">
+                <% if (m.status === 'FINISHED') { %>
+                  <span class="text-base font-bold text-slate-900"><%= m.home_score %> - <%= m.away_score %></span>
+                <% } else if (m.status === 'LIVE') { %>
+                  <span class="text-base font-bold text-red-600"><%= m.home_score %> - <%= m.away_score %><span class="text-xs animate-pulse"> 🔴</span></span>
+                <% } else { %>
+                  <span class="text-sm text-slate-400">×</span>
+                <% } %>
+              </div>
+
+              <!-- Away team (LEFT in RTL) -->
+              <div class="flex items-center gap-2 min-w-0 flex-1">
+                <div class="h-7 w-7 shrink-0 rounded-full text-[10px] font-bold text-white flex items-center justify-center" style="background-color: <%= m.away_color || '#64748b' %>">
+                  <%= (m.away_short || m.away_name || '?').slice(0, 2).toUpperCase() %>
+                </div>
+                <span class="text-sm font-semibold text-slate-900 truncate"><%= m.away_name %></span>
+              </div>
+            </a>
+
+            <!-- Status badge -->
+            <div class="shrink-0">
+              <span class="rounded-full px-2 py-0.5 text-[10px] font-medium <%= m.status === 'LIVE' ? 'bg-red-100 text-red-700' : m.status === 'FINISHED' ? 'bg-slate-100 text-slate-700' : m.status === 'POSTPONED' ? 'bg-amber-100 text-amber-700' : 'bg-blue-100 text-blue-700' %>">
+                <%= m.status === 'SCHEDULED' ? 'قادمة' : m.status === 'LIVE' ? 'مباشر' : m.status === 'FINISHED' ? 'انتهت' : m.status === 'POSTPONED' ? 'مؤجلة' : m.status === 'CANCELLED' ? 'ملغاة' : m.status %>
+              </span>
+            </div>
+
+            <!-- Delete button -->
+            <form action="/leagues/<%= leagueId %>/sections/<%= section.id %>/matches/<%= m.id %>/delete" method="POST" onsubmit="return confirm('حذف المباراة؟')" class="shrink-0">
+              <button class="rounded p-1 text-slate-400 hover:bg-red-50 hover:text-red-700 text-sm" title="حذف المباراة">✕</button>
+            </form>
+          </div>
+          <!-- Optional sub-line: time + venue -->
+          <% if (m.scheduled_at || m.venue) { %>
+            <div class="mt-1.5 text-[11px] text-slate-500 text-center">
+              <%= m.scheduled_at ? new Date(m.scheduled_at).toLocaleString('ar') : '' %>
+              <% if (m.venue) { %>· <%= m.venue %><% } %>
+            </div>
+          <% } %>
+        </div>
+      <% }); %>
+    </div>
+  <% } %>
+</div>

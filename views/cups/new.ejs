@@ -1,0 +1,119 @@
+<div>
+  <a href="/cups" class="text-sm text-slate-500 hover:text-slate-700">← الكؤوس</a>
+  <h1 class="mt-2 text-3xl font-bold text-slate-900">🏆 كأس جديد</h1>
+
+  <% if (typeof error !== 'undefined' && error) { %>
+    <div class="mt-4 rounded-lg bg-red-50 border border-red-200 p-3 text-sm text-red-700"><%= error %></div>
+  <% } %>
+
+  <form action="/cups/new" method="POST" class="mt-8 space-y-4 rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
+    <div>
+      <label class="mb-1.5 block text-sm font-medium text-slate-700">اسم الكأس *</label>
+      <input type="text" name="name" required class="block w-full rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-sm shadow-sm focus:border-amber-500 focus:outline-none focus:ring-1 focus:ring-amber-500" placeholder="كأس العرش 2026">
+    </div>
+
+    <div class="grid gap-4 sm:grid-cols-2">
+      <div>
+        <label class="mb-1.5 block text-sm font-medium text-slate-700">الدوري (اختياري)</label>
+        <select name="league_id" id="leagueSelect" class="block w-full rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-sm shadow-sm focus:border-amber-500 focus:outline-none focus:ring-1 focus:ring-amber-500">
+          <option value="">— مستقل (بدون دوري) —</option>
+          <% leagues.forEach(l => { %>
+            <option value="<%= l.id %>"><%= l.name %></option>
+          <% }); %>
+        </select>
+        <p class="mt-1 text-xs text-slate-500">اختر دوري للربط، أو اتركه فارغاً لكأس مستقل</p>
+      </div>
+      <div>
+        <label class="mb-1.5 block text-sm font-medium text-slate-700">القسم (للربط بقسم معين)</label>
+        <select name="section_id" id="sectionSelect" class="block w-full rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-sm shadow-sm focus:border-amber-500 focus:outline-none focus:ring-1 focus:ring-amber-500">
+          <option value="">— لا —</option>
+          <% sections.forEach(s => { %>
+            <option value="<%= s.id %>"><%= s.league_name %> / <%= s.name %></option>
+          <% }); %>
+        </select>
+      </div>
+    </div>
+
+    <div>
+      <label class="mb-1.5 block text-sm font-medium text-slate-700">نوع البطولة</label>
+      <div class="grid gap-3 sm:grid-cols-2">
+        <label class="flex items-start gap-2 rounded-lg border-2 border-slate-200 p-3 cursor-pointer hover:border-amber-500 has-[:checked]:border-amber-600 has-[:checked]:bg-amber-50">
+          <input type="radio" name="type" value="KNOCKOUT" checked class="mt-1">
+          <div>
+            <div class="font-semibold text-slate-900">خروج المغلوب (Single)</div>
+            <div class="text-xs text-slate-500">كل جولة تُخرج نصف الفرق. الأسرع والأبسط.</div>
+          </div>
+        </label>
+        <label class="flex items-start gap-2 rounded-lg border-2 border-slate-200 p-3 cursor-pointer hover:border-amber-500 has-[:checked]:border-amber-600 has-[:checked]:bg-amber-50">
+          <input type="radio" name="type" value="DOUBLE_ELIMINATION" class="mt-1">
+          <div>
+            <div class="font-semibold text-slate-900">إقصاء مزدوج (Double)</div>
+            <div class="text-xs text-slate-500">الخاسر مرة واحدة يدخل losers bracket. فرصة ثانية.</div>
+          </div>
+        </label>
+      </div>
+    </div>
+
+    <div>
+      <label class="mb-1.5 block text-sm font-medium text-slate-700">طريقة القرعة</label>
+      <div class="grid gap-3 sm:grid-cols-2">
+        <label class="flex items-start gap-2 rounded-lg border-2 border-slate-200 p-3 cursor-pointer hover:border-amber-500 has-[:checked]:border-amber-600 has-[:checked]:bg-amber-50">
+          <input type="radio" name="pairing_mode" value="RANDOM" checked class="mt-1">
+          <div>
+            <div class="font-semibold text-slate-900">عشوائي</div>
+            <div class="text-xs text-slate-500">يخلط الفرق عشوائياً</div>
+          </div>
+        </label>
+        <label class="flex items-start gap-2 rounded-lg border-2 border-slate-200 p-3 cursor-pointer hover:border-amber-500 has-[:checked]:border-amber-600 has-[:checked]:bg-amber-50">
+          <input type="radio" name="pairing_mode" value="SEEDED" class="mt-1">
+          <div>
+            <div class="font-semibold text-slate-900">مرتّب (Seeded)</div>
+            <div class="text-xs text-slate-500">الأقوى يلعب الأضعف في الجولة الأولى</div>
+          </div>
+        </label>
+      </div>
+    </div>
+
+    <div>
+      <label class="mb-1.5 block text-sm font-medium text-slate-700">مصدر الفرق</label>
+      <div class="grid gap-3 sm:grid-cols-2">
+        <label class="flex items-start gap-2 rounded-lg border-2 border-slate-200 p-3 cursor-pointer hover:border-amber-500 has-[:checked]:border-amber-600 has-[:checked]:bg-amber-50">
+          <input type="radio" name="team_source" value="MANUAL" checked class="mt-1" onchange="document.getElementById('teamList').style.display='block'; document.getElementById('sectionInfo').style.display='none';">
+          <div>
+            <div class="font-semibold text-slate-900">اختيار يدوي</div>
+            <div class="text-xs text-slate-500">تختار الفرق بنفسك</div>
+          </div>
+        </label>
+        <label class="flex items-start gap-2 rounded-lg border-2 border-slate-200 p-3 cursor-pointer hover:border-amber-500 has-[:checked]:border-amber-600 has-[:checked]:bg-amber-50">
+          <input type="radio" name="team_source" value="SECTION" class="mt-1" onchange="document.getElementById('teamList').style.display='none'; document.getElementById('sectionInfo').style.display='block';">
+          <div>
+            <div class="font-semibold text-slate-900">من قسم</div>
+            <div class="text-xs text-slate-500">يأخذ كل فرق القسم المختار</div>
+          </div>
+        </label>
+      </div>
+    </div>
+
+    <div id="teamList">
+      <label class="mb-1.5 block text-sm font-medium text-slate-700">اختر الفرق *</label>
+      <div class="max-h-64 overflow-y-auto rounded-lg border border-slate-200 p-3 space-y-1">
+        <% teams.forEach(t => { %>
+          <label class="flex items-center gap-2 rounded px-2 py-1 hover:bg-slate-50">
+            <input type="checkbox" name="team_ids" value="<%= t.id %>" class="rounded border-slate-300 text-amber-600 focus:ring-amber-500">
+            <span class="text-sm text-slate-700"><%= t.league_name %> / <%= t.section_name %> / <strong><%= t.name %></strong></span>
+          </label>
+        <% }); %>
+      </div>
+      <p class="mt-1 text-xs text-slate-500">حدد فريقين على الأقل (يُفضل 4، 8، 16)</p>
+    </div>
+
+    <div id="sectionInfo" style="display:none" class="rounded-lg bg-amber-50 border border-amber-200 p-3 text-sm text-amber-800">
+      💡 سيتم أخذ كل فرق القسم المختار أعلاه تلقائياً.
+    </div>
+
+    <div class="flex justify-end gap-3 pt-2">
+      <a href="/cups" class="rounded-lg border border-slate-300 bg-white px-4 py-2.5 text-sm font-semibold text-slate-700 hover:bg-slate-50">إلغاء</a>
+      <button type="submit" class="rounded-lg bg-amber-600 px-4 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-amber-700">إنشاء الكأس</button>
+    </div>
+  </form>
+</div>

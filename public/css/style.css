@@ -1,0 +1,27 @@
+/* Football League Manager — custom styles on top of Tailwind */
+
+* { box-sizing: border-box; }
+
+body {
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Tailwind override: ensure [hidden] always wins */
+[hidden] { display: none !important; }
+
+/* Number input arrows tweak */
+input[type=number]::-webkit-inner-spin-button,
+input[type=number]::-webkit-outer-spin-button { opacity: 0.5; }
+
+/* Print-friendly tables */
+@media print {
+  nav, footer, .no-print { display: none !important; }
+  body { background: white; }
+  table { page-break-inside: avoid; }
+}
+
+/* RTL fixes for radio/color inputs */
+input[type=color] { padding: 2px; }
+input[type=radio].sr-only { position: absolute; opacity: 0; }
+input[type=radio].sr-only:checked + span { opacity: 1; }

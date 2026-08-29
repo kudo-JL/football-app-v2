@@ -1,0 +1,128 @@
+<div>
+  <a href="/leagues/<%= leagueId %>/sections/<%= section.id %>" class="text-sm text-slate-500 hover:text-slate-700">← <%= section.name %></a>
+  <h1 class="mt-2 text-3xl font-bold text-slate-900">تعديل: <%= team.name %></h1>
+
+  <% if (error) { %>
+    <div class="mt-4 rounded-lg bg-red-50 border border-red-200 p-3 text-sm text-red-700"><%= error %></div>
+  <% } %>
+
+  <form action="/leagues/<%= leagueId %>/sections/<%= section.id %>/teams/<%= team.id %>/edit" method="POST" enctype="multipart/form-data" class="mt-8 space-y-4 rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
+    <div>
+      <label class="mb-1.5 block text-sm font-medium text-slate-700">اسم الفريق *</label>
+      <input type="text" name="name" required value="<%= team.name %>" class="block w-full rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-sm shadow-sm focus:border-emerald-500 focus:outline-none focus:ring-1 focus:ring-emerald-500">
+    </div>
+    <div>
+      <label class="mb-1.5 block text-sm font-medium text-slate-700">الاسم المختصر</label>
+      <input type="text" name="shortName" maxlength="4" value="<%= team.short_name || '' %>" class="block w-full rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-sm shadow-sm focus:border-emerald-500 focus:outline-none focus:ring-1 focus:ring-emerald-500">
+    </div>
+
+    <div>
+      <label class="mb-1.5 block text-sm font-medium text-slate-700">شعار الفريق</label>
+      <% if (team.logo) { %>
+        <div class="mb-2 flex items-center gap-3">
+          <img src="<%= team.logo %>" alt="شعار حالي" class="h-12 w-12 rounded-full object-cover ring-2 ring-slate-200" onerror="this.style.display='none'">
+          <div class="text-xs text-slate-500 truncate flex-1"><%= team.logo %></div>
+        </div>
+      <% } %>
+      <div class="grid gap-3 sm:grid-cols-2">
+        <div>
+          <label class="mb-1 block text-xs text-slate-500">رفع شعار جديد (يستبدل الحالي)</label>
+          <input type="file" name="logoFile" accept="image/*" class="block w-full text-sm text-slate-500 file:ml-0 file:mr-3 file:rounded-lg file:border-0 file:bg-emerald-50 file:px-3 file:py-2 file:text-sm file:font-semibold file:text-emerald-700 hover:file:bg-emerald-100">
+          <p class="mt-1 text-xs text-slate-500">JPG / PNG / GIF / WEBP / SVG — حد أقصى 2 MB</p>
+        </div>
+        <div>
+          <label class="mb-1 block text-xs text-slate-500">أو رابط مباشر</label>
+          <input type="url" name="logo" value="<%= team.logo && !team.logo.startsWith('/uploads/') ? team.logo : '' %>" class="block w-full rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-sm shadow-sm focus:border-emerald-500 focus:outline-none focus:ring-1 focus:ring-emerald-500" placeholder="https://...">
+        </div>
+      </div>
+    </div>
+
+    <div>
+      <label class="mb-1.5 block text-sm font-medium text-slate-700">اللون</label>
+      <input type="hidden" name="color" id="colorInput" value="<%= team.color || '#2563eb' %>">
+      <div class="flex flex-wrap items-center gap-2">
+        <% presetColors.forEach(c => { %>
+          <button type="button" data-color="<%= c %>" class="color-preset h-9 w-9 rounded-full border-2 border-white shadow ring-1 ring-slate-200 transition hover:scale-110 focus:outline-none" style="background-color: <%= c %>"></button>
+        <% }); %>
+        <div class="ms-2 flex items-center gap-2">
+          <label class="text-xs text-slate-500">مخصص:</label>
+          <input type="color" id="colorPicker" value="<%= team.color || '#2563eb' %>" class="h-9 w-12 cursor-pointer rounded border border-slate-300">
+          <span id="colorLabel" class="font-mono text-xs text-slate-500"><%= team.color || '#2563eb' %></span>
+        </div>
+      </div>
+    </div>
+
+    <div class="grid gap-4 sm:grid-cols-2">
+      <div>
+        <label class="mb-1.5 block text-sm font-medium text-slate-700">سنة التأسيس</label>
+        <input type="number" name="founded" min="1800" max="2100" value="<%= team.founded || '' %>" class="block w-full rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-sm shadow-sm focus:border-emerald-500 focus:outline-none focus:ring-1 focus:ring-emerald-500">
+      </div>
+      <div>
+        <label class="mb-1.5 block text-sm font-medium text-slate-700">الحالة</label>
+        <select name="status" class="block w-full rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-sm shadow-sm focus:border-emerald-500 focus:outline-none focus:ring-1 focus:ring-emerald-500">
+          <option value="ACTIVE" <%= team.status === 'ACTIVE' ? 'selected' : '' %>>نشط</option>
+          <option value="PROMOTED" <%= team.status === 'PROMOTED' ? 'selected' : '' %>>صاعد</option>
+          <option value="RELEGATED" <%= team.status === 'RELEGATED' ? 'selected' : '' %>>نازل</option>
+        </select>
+      </div>
+    </div>
+
+    <!-- Point deduction -->
+    <div class="rounded-xl border-2 border-amber-200 bg-amber-50 p-4">
+      <div class="flex items-center gap-2 mb-2">
+        <span class="text-amber-700 text-lg">⚠️</span>
+        <h3 class="font-semibold text-amber-900">خصم النقاط</h3>
+      </div>
+      <p class="text-xs text-amber-800 mb-3">يُخصم من نقاط الفريق في الترتيب النهائي. استخدمه عند وجود عقوبات إدارية أو مخالفات.</p>
+      <div class="grid gap-3 sm:grid-cols-2">
+        <div>
+          <label class="mb-1.5 block text-sm font-medium text-amber-900">عدد النقاط المخصومة</label>
+          <input type="number" name="pointDeduction" min="0" step="1" value="<%= team.point_deduction || 0 %>" class="block w-full rounded-lg border border-amber-300 bg-white px-3 py-2.5 text-sm shadow-sm focus:border-amber-500 focus:outline-none focus:ring-1 focus:ring-amber-500">
+        </div>
+        <div>
+          <label class="mb-1.5 block text-sm font-medium text-amber-900">سبب الخصم (اختياري)</label>
+          <input type="text" name="deductionReason" maxlength="120" value="<%= team.deduction_reason || '' %>" placeholder="مثل: عدم حضور مباراة" class="block w-full rounded-lg border border-amber-300 bg-white px-3 py-2.5 text-sm shadow-sm focus:border-amber-500 focus:outline-none focus:ring-1 focus:ring-amber-500">
+        </div>
+      </div>
+    </div>
+    <div class="flex justify-between pt-2">
+      <form action="/leagues/<%= leagueId %>/sections/<%= section.id %>/teams/<%= team.id %>/delete" method="POST" onsubmit="return confirm('حذف الفريق وكل مبارياته؟')" class="inline">
+        <button class="rounded-lg border border-red-300 bg-white px-4 py-2.5 text-sm font-semibold text-red-700 hover:bg-red-50">🗑️ حذف</button>
+      </form>
+      <div class="flex gap-3">
+        <a href="/leagues/<%= leagueId %>/sections/<%= section.id %>" class="rounded-lg border border-slate-300 bg-white px-4 py-2.5 text-sm font-semibold text-slate-700 hover:bg-slate-50">إلغاء</a>
+        <button type="submit" class="rounded-lg bg-emerald-600 px-4 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-emerald-700">حفظ</button>
+      </div>
+    </div>
+  </form>
+</div>
+
+<script>
+  (function () {
+    var hidden = document.getElementById('colorInput');
+    var picker = document.getElementById('colorPicker');
+    var label = document.getElementById('colorLabel');
+    var presets = document.querySelectorAll('.color-preset');
+
+    function setColor(c) {
+      if (!c) return;
+      hidden.value = c;
+      picker.value = c;
+      label.textContent = c;
+      presets.forEach(function (p) {
+        var match = (p.dataset.color || '').toUpperCase() === c.toUpperCase();
+        p.style.boxShadow = match ? '0 0 0 3px #10b981' : '';
+      });
+    }
+
+    presets.forEach(function (btn) {
+      btn.addEventListener('click', function (e) {
+        e.preventDefault();
+        setColor(btn.dataset.color);
+      });
+    });
+
+    picker.addEventListener('input', function () { setColor(picker.value); });
+    setColor(hidden.value);
+  })();
+</script>

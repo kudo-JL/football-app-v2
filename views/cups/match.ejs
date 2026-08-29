@@ -1,0 +1,127 @@
+<div>
+  <a href="/cups/<%= cup.id %>" class="text-sm text-slate-500 hover:text-slate-700">← <%= cup.name %></a>
+  <h1 class="mt-2 text-3xl font-bold text-slate-900">تسجيل نتيجة</h1>
+  <p class="mt-1 text-sm text-slate-600"><%= match.round_name %></p>
+
+  <% if (typeof error !== 'undefined' && error) { %>
+    <div class="mt-4 rounded-lg bg-red-50 border border-red-200 p-3 text-sm text-red-700"><%= error %></div>
+  <% } %>
+  <% if (typeof saved !== 'undefined' && saved) { %>
+    <div id="saved-msg" class="mt-4 rounded-lg bg-emerald-50 border border-emerald-200 p-3 text-sm text-emerald-800">
+      ✅ تم تسجيل النتيجة وتأهيل الفائز
+    </div>
+  <% } %>
+
+  <form id="matchForm" action="/cups/<%= cup.id %>/matches/<%= match.id %>" method="POST" class="mt-6 mx-auto max-w-2xl rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+    <!-- Compact score row: home (right) | score inputs | away (left) -->
+    <div class="rounded-xl bg-slate-50 p-4">
+      <div class="flex items-center justify-between gap-4">
+        <!-- Home team (right side in RTL) -->
+        <div class="flex items-center gap-2 min-w-0 flex-1 justify-end">
+          <span class="font-semibold text-slate-900 truncate"><%= match.home_name %></span>
+          <% if (match.home_logo) { %>
+            <img src="<%= match.home_logo %>" class="h-9 w-9 shrink-0 rounded-full object-cover ring-1 ring-slate-200" onerror="this.style.display='none'">
+          <% } else { %>
+            <div class="h-9 w-9 shrink-0 rounded-full text-xs font-bold text-white flex items-center justify-center" style="background-color: <%= match.home_color || '#64748b' %>">
+              <%= (match.home_short || match.home_name || '?').slice(0, 2).toUpperCase() %>
+            </div>
+          <% } %>
+        </div>
+
+        <!-- Score (center) -->
+        <div class="flex items-center gap-1.5 shrink-0">
+          <input id="homeScore" type="number" name="homeScore" min="0" value="<%= match.home_score ?? 0 %>" class="w-12 text-center text-xl font-bold rounded-lg border border-slate-300 px-1 py-1.5 focus:border-amber-500 focus:outline-none focus:ring-1 focus:ring-amber-500">
+          <span class="text-xl font-bold text-slate-400">-</span>
+          <input id="awayScore" type="number" name="awayScore" min="0" value="<%= match.away_score ?? 0 %>" class="w-12 text-center text-xl font-bold rounded-lg border border-slate-300 px-1 py-1.5 focus:border-amber-500 focus:outline-none focus:ring-1 focus:ring-amber-500">
+        </div>
+
+        <!-- Away team (left side in RTL) -->
+        <div class="flex items-center gap-2 min-w-0 flex-1">
+          <% if (match.away_logo) { %>
+            <img src="<%= match.away_logo %>" class="h-9 w-9 shrink-0 rounded-full object-cover ring-1 ring-slate-200" onerror="this.style.display='none'">
+          <% } else { %>
+            <div class="h-9 w-9 shrink-0 rounded-full text-xs font-bold text-white flex items-center justify-center" style="background-color: <%= match.away_color || '#64748b' %>">
+              <%= (match.away_short || match.away_name || '?').slice(0, 2).toUpperCase() %>
+            </div>
+          <% } %>
+          <span class="font-semibold text-slate-900 truncate"><%= match.away_name %></span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Random result buttons — full logic inlined in onclick (no external function) -->
+    <div class="mt-3 grid gap-2 grid-cols-3">
+      <button type="button" onclick="var h=document.getElementById('homeScore'),a=document.getElementById('awayScore');if(!h||!a){alert('خطأ');return false;}h.value=Math.floor(Math.random()*6);a.value=Math.floor(Math.random()*6);return false;" class="rounded-lg border border-purple-300 bg-purple-50 px-2 py-2 text-xs font-semibold text-purple-700 hover:bg-purple-100">
+        🎲 عشوائية
+      </button>
+      <button type="button" onclick="var h=document.getElementById('homeScore'),a=document.getElementById('awayScore');if(!h||!a){alert('خطأ');return false;}var hh=Math.floor(Math.random()*6),aa=Math.floor(Math.random()*6);if(Math.random()<0.4)hh=Math.min(5,hh+1);if(Math.random()<0.2)aa=Math.max(0,aa-1);h.value=hh;a.value=aa;return false;" class="rounded-lg border border-emerald-300 bg-emerald-50 px-2 py-2 text-xs font-semibold text-emerald-700 hover:bg-emerald-100">
+        🎲 فوز معقول
+      </button>
+      <button type="button" onclick="var h=document.getElementById('homeScore'),a=document.getElementById('awayScore');if(!h||!a){alert('خطأ');return false;}var n=1+Math.floor(Math.random()*3);h.value=n;a.value=n;var r=document.querySelectorAll('input[name=&quot;winnerExplicit&quot;]');if(r.length){r[Math.floor(Math.random()*r.length)].checked=true;}return false;" class="rounded-lg border border-amber-300 bg-amber-50 px-2 py-2 text-xs font-semibold text-amber-700 hover:bg-amber-100">
+        🤝 تعادل
+      </button>
+    </div>
+
+    <!-- Extra time score (ALWAYS visible — fill only if match went to extra time) -->
+    <div class="mt-3 rounded-lg bg-blue-50 border border-blue-200 p-3">
+      <p class="text-sm font-semibold text-blue-800">⏱️ نتيجة الأشواط الإضافية (اختياري):</p>
+      <p class="text-xs text-blue-700 mt-0.5">اتركه فارغاً إذا انتهت في الوقت الأصلي، أو ذهبت مباشرة لركلات الترجيح.</p>
+      <div class="mt-2 flex items-center justify-center gap-2">
+        <input id="homeScoreET" type="number" name="homeScoreET" min="0" value="<%= match.home_score_et ?? '' %>" placeholder="—" class="w-14 text-center text-base font-bold rounded-lg border border-blue-300 bg-white px-1 py-1.5 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500">
+        <span class="text-base font-bold text-blue-400">-</span>
+        <input id="awayScoreET" type="number" name="awayScoreET" min="0" value="<%= match.away_score_et ?? '' %>" placeholder="—" class="w-14 text-center text-base font-bold rounded-lg border border-blue-300 bg-white px-1 py-1.5 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500">
+      </div>
+    </div>
+
+    <!-- Penalties score (ALWAYS visible) -->
+    <div class="mt-3 rounded-lg bg-purple-50 border border-purple-200 p-3">
+      <p class="text-sm font-semibold text-purple-800">🎯 نتيجة ركلات الترجيح (اختياري):</p>
+      <p class="text-xs text-purple-700 mt-0.5">اتركه فارغاً إذا لم تصل لركلات الترجيح.</p>
+      <div class="mt-2 flex items-center justify-center gap-2">
+        <input id="homePenalties" type="number" name="homePenalties" min="0" max="20" value="<%= match.home_penalties ?? '' %>" placeholder="—" class="w-14 text-center text-base font-bold rounded-lg border border-purple-300 bg-white px-1 py-1.5 focus:border-purple-500 focus:outline-none focus:ring-1 focus:ring-purple-500">
+        <span class="text-base font-bold text-purple-400">-</span>
+        <input id="awayPenalties" type="number" name="awayPenalties" min="0" max="20" value="<%= match.away_penalties ?? '' %>" placeholder="—" class="w-14 text-center text-base font-bold rounded-lg border border-purple-300 bg-white px-1 py-1.5 focus:border-purple-500 focus:outline-none focus:ring-1 focus:ring-purple-500">
+      </div>
+    </div>
+
+    <!-- (Winner is now determined automatically by ET/penalties scores — no picker needed) -->
+
+    <div class="mt-4 flex justify-end gap-2">
+      <a href="/cups/<%= cup.id %>" class="rounded-lg border border-slate-300 bg-white px-4 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50">إلغاء</a>
+      <button type="submit" class="rounded-lg bg-amber-600 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-amber-700">حفظ وتأهيل</button>
+    </div>
+  </form>
+</div>
+
+<script>
+  // (All sections are now ALWAYS visible — no JS toggling needed)
+  console.log('[FootballApp] Cup match form loaded with ET/penalties sections visible');
+
+  // Auto-hide success message
+  setTimeout(function () {
+    var msg = document.getElementById('saved-msg');
+    if (msg) {
+      msg.style.transition = 'opacity 0.5s';
+      msg.style.opacity = '0';
+      setTimeout(function () { if (msg.parentNode) msg.remove(); }, 500);
+    }
+  }, 4000);
+</script>
+
+  // Wire input listeners
+  ['homeScore', 'awayScore', 'homeScoreET', 'awayScoreET'].forEach(function (id) {
+    var el = document.getElementById(id);
+    if (el) el.addEventListener('input', updateAll);
+  });
+  updateAll();
+
+  // Auto-hide success message
+  setTimeout(function () {
+    var msg = document.getElementById('saved-msg');
+    if (msg) {
+      msg.style.transition = 'opacity 0.5s';
+      msg.style.opacity = '0';
+      setTimeout(function () { if (msg.parentNode) msg.remove(); }, 500);
+    }
+  }, 4000);
+</script>

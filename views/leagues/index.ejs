@@ -1,0 +1,41 @@
+<div>
+  <header class="flex items-center justify-between flex-wrap gap-2">
+    <div>
+      <h1 class="text-3xl font-bold text-slate-900"><%= user ? 'دورياتي' : 'كل الدوريات' %></h1>
+      <p class="mt-1 text-sm text-slate-600"><%= leagues.length %> دوري</p>
+    </div>
+    <% if (user) { %>
+      <a href="/leagues/new" class="rounded-lg bg-emerald-600 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-emerald-700">+ دوري جديد</a>
+    <% } %>
+  </header>
+
+  <% if (leagues.length === 0) { %>
+    <div class="mt-8 rounded-2xl border-2 border-dashed border-slate-300 bg-white p-12 text-center">
+      <div class="text-5xl mb-3">🏆</div>
+      <h3 class="font-semibold text-slate-900"><%= user ? 'لا توجد دوريات' : 'لا توجد دوريات عامة بعد' %></h3>
+      <% if (user) { %>
+        <a href="/leagues/new" class="mt-4 inline-block rounded-lg bg-emerald-600 px-4 py-2 text-sm font-semibold text-white">+ أنشئ أول دوري</a>
+      <% } %>
+    </div>
+  <% } else { %>
+    <div class="mt-8 space-y-3">
+      <% leagues.forEach(l => { %>
+        <a href="/leagues/<%= l.id %>" class="flex items-center justify-between rounded-2xl border border-slate-200 bg-white p-5 shadow-sm transition hover:shadow-md">
+          <div>
+            <h3 class="text-lg font-semibold text-slate-900"><%= l.name %></h3>
+            <p class="mt-1 text-sm text-slate-500"><%= l.season %><% if (l.country) { %> · <%= l.country %><% } %></p>
+          </div>
+          <div class="flex items-center gap-3 flex-wrap">
+            <span class="text-sm text-slate-600"><%= l.section_count %> قسم</span>
+            <% if (l.is_public) { %>
+              <span class="rounded-full bg-emerald-100 px-3 py-1 text-xs font-medium text-emerald-800">🌍 عام</span>
+            <% } else { %>
+              <span class="rounded-full bg-amber-100 px-3 py-1 text-xs font-medium text-amber-800">🔒 خاص</span>
+            <% } %>
+            <span class="rounded-full bg-slate-100 px-3 py-1 text-xs font-medium text-slate-700"><%= l.status %></span>
+          </div>
+        </a>
+      <% }); %>
+    </div>
+  <% } %>
+</div>

@@ -1,0 +1,56 @@
+<div>
+  <a href="/leagues/<%= leagueId %>/sections/<%= section.id %>/teams/<%= team.id %>/players" class="text-sm text-slate-500 hover:text-slate-700">← لاعبو <%= team.name %></a>
+  <h1 class="mt-2 text-3xl font-bold text-slate-900">✏️ تعديل: <%= player.name %></h1>
+  <p class="mt-1 text-sm text-slate-600"><%= team.name %></p>
+
+  <% if (error) { %>
+    <div class="mt-4 rounded-lg bg-red-50 border border-red-200 p-3 text-sm text-red-700"><%= error %></div>
+  <% } %>
+
+  <form action="/leagues/<%= leagueId %>/sections/<%= section.id %>/teams/<%= team.id %>/players/<%= player.id %>/edit" method="POST" class="mt-8 space-y-4 rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
+    <div>
+      <label class="mb-1.5 block text-sm font-medium text-slate-700">اسم اللاعب *</label>
+      <input type="text" name="name" required value="<%= player.name %>" class="block w-full rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-sm shadow-sm focus:border-emerald-500 focus:outline-none focus:ring-1 focus:ring-emerald-500">
+    </div>
+
+    <div class="grid gap-4 sm:grid-cols-3">
+      <div>
+        <label class="mb-1.5 block text-sm font-medium text-slate-700">رقم القميص</label>
+        <input type="number" name="jerseyNumber" min="1" max="99" value="<%= player.jersey_number || '' %>" class="block w-full rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-sm shadow-sm focus:border-emerald-500 focus:outline-none focus:ring-1 focus:ring-emerald-500">
+      </div>
+      <div>
+        <label class="mb-1.5 block text-sm font-medium text-slate-700">تاريخ الميلاد</label>
+        <input type="date" name="birthDate" value="<%= player.birth_date || '' %>" class="block w-full rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-sm shadow-sm focus:border-emerald-500 focus:outline-none focus:ring-1 focus:ring-emerald-500">
+      </div>
+      <div>
+        <label class="mb-1.5 block text-sm font-medium text-slate-700">المركز</label>
+        <select name="position" class="block w-full rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-sm shadow-sm focus:border-emerald-500 focus:outline-none focus:ring-1 focus:ring-emerald-500">
+          <option value="GK" <%= player.position === 'GK' ? 'selected' : '' %>>🧤 حارس (GK)</option>
+          <option value="DEF" <%= player.position === 'DEF' ? 'selected' : '' %>>🛡 مدافع (DEF)</option>
+          <option value="MID" <%= player.position === 'MID' ? 'selected' : '' %>>⚽ وسط (MID)</option>
+          <option value="FWD" <%= player.position === 'FWD' ? 'selected' : '' %>>🎯 مهاجم (FWD)</option>
+        </select>
+      </div>
+    </div>
+
+    <div>
+      <label class="mb-1.5 block text-sm font-medium text-slate-700">رابط الصورة (اختياري)</label>
+      <input type="url" name="photo" value="<%= player.photo || '' %>" class="block w-full rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-sm shadow-sm focus:border-emerald-500 focus:outline-none focus:ring-1 focus:ring-emerald-500">
+    </div>
+
+    <div>
+      <label class="mb-1.5 block text-sm font-medium text-slate-700">ملاحظات</label>
+      <textarea name="notes" rows="2" class="block w-full rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-sm shadow-sm focus:border-emerald-500 focus:outline-none focus:ring-1 focus:ring-emerald-500"><%= player.notes || '' %></textarea>
+    </div>
+
+    <div class="flex justify-between pt-2">
+      <form action="/leagues/<%= leagueId %>/sections/<%= section.id %>/teams/<%= team.id %>/players/<%= player.id %>/delete" method="POST" class="inline" onsubmit="return confirm('حذف <%= player.name %>؟')">
+        <button class="rounded-lg border border-red-300 bg-white px-4 py-2.5 text-sm font-semibold text-red-700 hover:bg-red-50">🗑️ حذف</button>
+      </form>
+      <div class="flex gap-3">
+        <a href="/leagues/<%= leagueId %>/sections/<%= section.id %>/teams/<%= team.id %>/players" class="rounded-lg border border-slate-300 bg-white px-4 py-2.5 text-sm font-semibold text-slate-700 hover:bg-slate-50">إلغاء</a>
+        <button type="submit" class="rounded-lg bg-emerald-600 px-4 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-emerald-700">حفظ</button>
+      </div>
+    </div>
+  </form>
+</div>

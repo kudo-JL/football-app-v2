@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>إنشاء حساب · <%= appName %></title>
+  <link rel="stylesheet" href="/css/style.css">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    [hidden] { display: none !important; }
+    body { font-family: 'Cairo', 'Segoe UI', system-ui, sans-serif; }
+  </style>
+</head>
+<body class="min-h-screen bg-gradient-to-l from-emerald-600 to-emerald-800 flex items-center justify-center px-6">
+  <div class="w-full max-w-md">
+    <div class="rounded-2xl bg-white p-8 shadow-2xl">
+      <h1 class="text-3xl font-bold text-slate-900">⚽ <%= appName %></h1>
+      <p class="mt-1 text-sm text-slate-600">إنشاء حساب جديد</p>
+
+      <% if (error) { %>
+        <div class="mt-4 rounded-lg bg-red-50 border border-red-200 p-3 text-sm text-red-700"><%= error %></div>
+      <% } %>
+
+      <form action="/register" method="POST" class="mt-6 space-y-4">
+        <div>
+          <label class="mb-1.5 block text-sm font-medium text-slate-700">الاسم</label>
+          <input type="text" name="name" required minlength="2" class="block w-full rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-sm shadow-sm focus:border-emerald-500 focus:outline-none focus:ring-1 focus:ring-emerald-500">
+        </div>
+        <div>
+          <label class="mb-1.5 block text-sm font-medium text-slate-700">البريد الإلكتروني</label>
+          <input type="email" name="email" required class="block w-full rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-sm shadow-sm focus:border-emerald-500 focus:outline-none focus:ring-1 focus:ring-emerald-500">
+        </div>
+        <div>
+          <label class="mb-1.5 block text-sm font-medium text-slate-700">كلمة المرور (6+)</label>
+          <input type="password" name="password" required minlength="6" class="block w-full rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-sm shadow-sm focus:border-emerald-500 focus:outline-none focus:ring-1 focus:ring-emerald-500">
+        </div>
+        <div>
+          <label class="mb-1.5 block text-sm font-medium text-slate-700">تأكيد كلمة المرور</label>
+          <input type="password" name="passwordConfirm" required minlength="6" class="block w-full rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-sm shadow-sm focus:border-emerald-500 focus:outline-none focus:ring-1 focus:ring-emerald-500">
+        </div>
+        <button type="submit" class="w-full inline-flex items-center justify-center rounded-lg bg-emerald-600 px-4 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-emerald-700">إنشاء الحساب</button>
+      </form>
+
+      <p class="mt-6 text-center text-sm text-slate-600">
+        لديك حساب؟ <a href="/login" class="font-semibold text-emerald-600 hover:text-emerald-700">سجل دخولك</a>
+      </p>
+    </div>
+  </div>
+</body>
+</html>

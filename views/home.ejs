@@ -1,0 +1,133 @@
+<div>
+  <% if (!user) { %>
+    <%# Two side-by-side cards for visitors: Browse vs Create %>
+    <div class="grid gap-4 lg:grid-cols-2">
+      <%# Card 1: Browse public leagues (no signup needed) %>
+      <div class="group relative overflow-hidden rounded-2xl border-2 border-emerald-200 bg-gradient-to-br from-emerald-50 via-white to-emerald-50/30 p-7 shadow-sm hover:shadow-md transition">
+        <div class="flex items-center gap-3 mb-4">
+          <div class="h-12 w-12 rounded-xl bg-emerald-600 text-white flex items-center justify-center text-2xl shadow-sm">👁️</div>
+          <div>
+            <p class="text-xs font-semibold uppercase tracking-wider text-emerald-700">للزوار</p>
+            <h2 class="text-2xl font-bold text-slate-900">تصفّح وتابع</h2>
+          </div>
+        </div>
+        <p class="text-slate-600 leading-relaxed">
+          تصفّح جميع الدوريات العامة المتاحة، تابع النتائج، الترتيب، والمواجهات المباشرة بين الفرق — مباشرة بدون أي تسجيل.
+        </p>
+        <ul class="mt-4 space-y-1.5 text-sm text-slate-600">
+          <li class="flex items-center gap-2"><span class="text-emerald-600">✓</span> ترتيب عام وذهاب وإياب</li>
+          <li class="flex items-center gap-2"><span class="text-emerald-600">✓</span> مبيان تطور الترتيب</li>
+          <li class="flex items-center gap-2"><span class="text-emerald-600">✓</span> المواجهات المباشرة H2H</li>
+          <li class="flex items-center gap-2"><span class="text-emerald-600">✓</span> إحصائيات متقدمة لكل فريق</li>
+        </ul>
+        <a href="/leagues" class="mt-6 inline-flex items-center gap-2 rounded-lg bg-emerald-600 px-5 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-emerald-700">
+          استعراض الدوريات
+          <span class="text-base">←</span>
+        </a>
+      </div>
+
+      <%# Card 2: Create account and manage own leagues %>
+      <div class="group relative overflow-hidden rounded-2xl border-2 border-amber-200 bg-gradient-to-br from-amber-50 via-white to-amber-50/30 p-7 shadow-sm hover:shadow-md transition">
+        <div class="flex items-center gap-3 mb-4">
+          <div class="h-12 w-12 rounded-xl bg-amber-600 text-white flex items-center justify-center text-2xl shadow-sm">🏆</div>
+          <div>
+            <p class="text-xs font-semibold uppercase tracking-wider text-amber-700">للمستخدمين</p>
+            <h2 class="text-2xl font-bold text-slate-900">أنشئ وأدِر</h2>
+          </div>
+        </div>
+        <p class="text-slate-600 leading-relaxed">
+          أنشئ حسابك خلال ثوانٍ وابدأ بإدارة دورياتك الخاصة. أضف فرقك، أنشئ الكؤوس، وتابع كل التفاصيل.
+        </p>
+        <ul class="mt-4 space-y-1.5 text-sm text-slate-600">
+          <li class="flex items-center gap-2"><span class="text-amber-600">✓</span> دوريات خاصة أو عامة للزوار</li>
+          <li class="flex items-center gap-2"><span class="text-amber-600">✓</span> كؤوس بأشواط إضافية وترجيح</li>
+          <li class="flex items-center gap-2"><span class="text-amber-600">✓</span> إدارة اللاعبين والإحصائيات</li>
+          <li class="flex items-center gap-2"><span class="text-amber-600">✓</span> خصم نقاط وصاعد/نازل</li>
+        </ul>
+        <div class="mt-6 flex flex-wrap gap-2">
+          <a href="/register" class="inline-flex items-center gap-2 rounded-lg bg-amber-600 px-5 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-amber-700">
+            حساب جديد
+            <span>+</span>
+          </a>
+          <a href="/login" class="inline-flex items-center gap-2 rounded-lg border border-amber-300 bg-white px-5 py-2.5 text-sm font-semibold text-amber-800 hover:bg-amber-50">
+            تسجيل الدخول
+          </a>
+        </div>
+      </div>
+    </div>
+  <% } else { %>
+    <div class="rounded-2xl border border-slate-200 bg-gradient-to-l from-emerald-50 to-white p-6 mb-8">
+      <h1 class="text-2xl font-bold text-slate-900">مرحباً <%= user.name %> 👋</h1>
+      <p class="mt-1 text-slate-600">أنشئ دورياتك الخاصة، أضف فرقك، تابع النتائج.</p>
+      <div class="mt-4 flex gap-2 flex-wrap">
+        <a href="/leagues/new" class="rounded-lg bg-emerald-600 px-4 py-2 text-sm font-semibold text-white hover:bg-emerald-700">+ دوري جديد</a>
+        <a href="/cups/new" class="rounded-lg border border-slate-300 bg-white px-4 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50">+ كأس جديد</a>
+        <% if (isAdmin) { %>
+          <a href="/admin" class="rounded-lg border border-purple-300 bg-purple-50 px-4 py-2 text-sm font-semibold text-purple-700 hover:bg-purple-100">👑 لوحة الأدمن</a>
+        <% } %>
+      </div>
+    </div>
+  <% } %>
+
+  <% if (user && myLeagues.length > 0) { %>
+    <section class="mb-10 mt-10">
+      <div class="flex items-center justify-between mb-3">
+        <h2 class="text-xl font-bold text-slate-900">دورياتي (<%= myLeagues.length %>)</h2>
+        <a href="/leagues" class="text-sm text-emerald-600 hover:text-emerald-700">عرض الكل</a>
+      </div>
+      <div class="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+        <% myLeagues.forEach(l => { %>
+          <a href="/leagues/<%= l.id %>" class="group block rounded-xl border border-slate-200 bg-white p-4 shadow-sm hover:shadow-md">
+            <h3 class="font-semibold text-slate-900 group-hover:text-emerald-600"><%= l.name %></h3>
+            <p class="text-xs text-slate-500 mt-1"><%= l.season %><% if (l.country) { %> · <%= l.country %><% } %></p>
+            <div class="mt-2 flex items-center gap-2 text-xs text-slate-500">
+              <span><%= l.section_count %> قسم</span>
+              <% if (!l.is_public) { %>
+                <span class="rounded-full bg-amber-100 text-amber-800 px-2 py-0.5">🔒 خاص</span>
+              <% } else { %>
+                <span class="rounded-full bg-emerald-100 text-emerald-800 px-2 py-0.5">🌍 عام</span>
+              <% } %>
+            </div>
+          </a>
+        <% }); %>
+      </div>
+    </section>
+  <% } %>
+
+  <section class="<%= (user && myLeagues.length > 0) ? '' : 'mt-10' %>">
+    <h2 class="text-xl font-bold text-slate-900 mb-3">⭐ الدوريات المميزة</h2>
+    <% if (publicLeagues.length === 0) { %>
+      <div class="rounded-2xl border-2 border-dashed border-slate-300 bg-white p-10 text-center">
+        <div class="text-5xl mb-3">⭐</div>
+        <h3 class="font-semibold text-slate-900">لا توجد دوريات مميزة بعد</h3>
+        <p class="mt-2 text-sm text-slate-500">
+          <% if (user && user.role === 'ADMIN') { %>
+            يمكنك تمييز أي من دورياتك من <a href="/admin" class="text-emerald-600 font-medium hover:underline">لوحة الأدمن</a>.
+          <% } else { %>
+            سيرى الزوار هنا فقط ما يختاره الأدمن.
+          <% } %>
+        </p>
+      </div>
+    <% } else { %>
+      <div class="grid gap-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+        <% publicLeagues.forEach(l => { %>
+          <a href="/leagues/<%= l.id %>" class="group relative block rounded-lg border-2 border-amber-200 bg-gradient-to-br from-amber-50 to-white px-3 py-2.5 shadow-sm hover:shadow-md hover:border-amber-400 transition">
+            <div class="absolute top-1 left-1 text-amber-500 text-sm">⭐</div>
+            <div class="flex items-center justify-between gap-2">
+              <h3 class="font-semibold text-sm text-slate-900 group-hover:text-emerald-600 truncate"><%= l.name %></h3>
+              <span class="shrink-0 text-[10px] font-mono text-slate-400"><%= l.season %></span>
+            </div>
+            <div class="mt-1.5 flex items-center gap-3 text-[11px] text-slate-500">
+              <span>📂 <%= l.section_count %></span>
+              <span>⚽ <%= l.team_count %></span>
+              <% if (l.country) { %><span class="truncate">🌍 <%= l.country %></span><% } %>
+            </div>
+            <% if (l.owner_name) { %>
+              <p class="text-[10px] text-slate-400 mt-1">بواسطة: <%= l.owner_name %></p>
+            <% } %>
+          </a>
+        <% }); %>
+      </div>
+    <% } %>
+  </section>
+</div>

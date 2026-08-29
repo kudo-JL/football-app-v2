@@ -1,0 +1,99 @@
+<div>
+  <a href="/leagues/<%= leagueId %>/sections/<%= section.id %>" class="text-sm text-slate-500 hover:text-slate-700">← <%= section.name %></a>
+  <h1 class="mt-2 text-3xl font-bold text-slate-900">فريق جديد</h1>
+
+  <% if (error) { %>
+    <div class="mt-4 rounded-lg bg-red-50 border border-red-200 p-3 text-sm text-red-700"><%= error %></div>
+  <% } %>
+
+  <form action="/leagues/<%= leagueId %>/sections/<%= section.id %>/teams/new" method="POST" enctype="multipart/form-data" class="mt-8 space-y-4 rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
+    <div>
+      <label class="mb-1.5 block text-sm font-medium text-slate-700">اسم الفريق *</label>
+      <input type="text" name="name" required value="<%= form.name || '' %>" class="block w-full rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-sm shadow-sm focus:border-emerald-500 focus:outline-none focus:ring-1 focus:ring-emerald-500" placeholder="الرجاء البيضاوي">
+    </div>
+    <div>
+      <label class="mb-1.5 block text-sm font-medium text-slate-700">الاسم المختصر</label>
+      <input type="text" name="shortName" maxlength="4" value="<%= form.shortName || '' %>" class="block w-full rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-sm shadow-sm focus:border-emerald-500 focus:outline-none focus:ring-1 focus:ring-emerald-500" placeholder="RCA">
+    </div>
+
+    <div>
+      <label class="mb-1.5 block text-sm font-medium text-slate-700">شعار الفريق</label>
+      <div class="grid gap-3 sm:grid-cols-2">
+        <div>
+          <label class="mb-1 block text-xs text-slate-500">رفع من الجهاز</label>
+          <input type="file" name="logoFile" accept="image/*" class="block w-full text-sm text-slate-500 file:ml-0 file:mr-3 file:rounded-lg file:border-0 file:bg-emerald-50 file:px-3 file:py-2 file:text-sm file:font-semibold file:text-emerald-700 hover:file:bg-emerald-100">
+          <p class="mt-1 text-xs text-slate-500">JPG / PNG / GIF / WEBP / SVG — حد أقصى 2 MB</p>
+        </div>
+        <div>
+          <label class="mb-1 block text-xs text-slate-500">أو رابط مباشر</label>
+          <input type="url" name="logo" value="<%= form.logo || '' %>" class="block w-full rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-sm shadow-sm focus:border-emerald-500 focus:outline-none focus:ring-1 focus:ring-emerald-500" placeholder="https://...">
+        </div>
+      </div>
+    </div>
+
+    <div>
+      <label class="mb-1.5 block text-sm font-medium text-slate-700">اللون</label>
+      <input type="hidden" name="color" id="colorInput" value="<%= form.color || '#2563eb' %>">
+      <div class="flex flex-wrap items-center gap-2">
+        <% presetColors.forEach(c => { %>
+          <button type="button" data-color="<%= c %>" class="color-preset h-9 w-9 rounded-full border-2 border-white shadow ring-1 ring-slate-200 transition hover:scale-110 focus:outline-none" style="background-color: <%= c %>"></button>
+        <% }); %>
+        <div class="ms-2 flex items-center gap-2">
+          <label class="text-xs text-slate-500">مخصص:</label>
+          <input type="color" id="colorPicker" value="<%= form.color || '#2563eb' %>" class="h-9 w-12 cursor-pointer rounded border border-slate-300">
+          <span id="colorLabel" class="font-mono text-xs text-slate-500"><%= form.color || '#2563eb' %></span>
+        </div>
+      </div>
+      <p class="mt-1 text-xs text-slate-500">اضغط دائرة لون جاهز، أو اختر لون مخصص من المستطيل</p>
+    </div>
+
+    <div class="grid gap-4 sm:grid-cols-2">
+      <div>
+        <label class="mb-1.5 block text-sm font-medium text-slate-700">سنة التأسيس</label>
+        <input type="number" name="founded" min="1800" max="2100" value="<%= form.founded || '' %>" class="block w-full rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-sm shadow-sm focus:border-emerald-500 focus:outline-none focus:ring-1 focus:ring-emerald-500">
+      </div>
+      <div>
+        <label class="mb-1.5 block text-sm font-medium text-slate-700">الحالة</label>
+        <select name="status" class="block w-full rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-sm shadow-sm focus:border-emerald-500 focus:outline-none focus:ring-1 focus:ring-emerald-500">
+          <option value="ACTIVE" <%= (form.status || 'ACTIVE') === 'ACTIVE' ? 'selected' : '' %>>نشط</option>
+          <option value="PROMOTED" <%= form.status === 'PROMOTED' ? 'selected' : '' %>>صاعد</option>
+          <option value="RELEGATED" <%= form.status === 'RELEGATED' ? 'selected' : '' %>>نازل</option>
+        </select>
+      </div>
+    </div>
+    <div class="flex justify-end gap-3 pt-2">
+      <a href="/leagues/<%= leagueId %>/sections/<%= section.id %>" class="rounded-lg border border-slate-300 bg-white px-4 py-2.5 text-sm font-semibold text-slate-700 hover:bg-slate-50">إلغاء</a>
+      <button type="submit" class="rounded-lg bg-emerald-600 px-4 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-emerald-700">إضافة</button>
+    </div>
+  </form>
+</div>
+
+<script>
+  (function () {
+    var hidden = document.getElementById('colorInput');
+    var picker = document.getElementById('colorPicker');
+    var label = document.getElementById('colorLabel');
+    var presets = document.querySelectorAll('.color-preset');
+
+    function setColor(c) {
+      if (!c) return;
+      hidden.value = c;
+      picker.value = c;
+      label.textContent = c;
+      presets.forEach(function (p) {
+        var match = (p.dataset.color || '').toUpperCase() === c.toUpperCase();
+        p.style.boxShadow = match ? '0 0 0 3px #10b981' : '';
+      });
+    }
+
+    presets.forEach(function (btn) {
+      btn.addEventListener('click', function (e) {
+        e.preventDefault();
+        setColor(btn.dataset.color);
+      });
+    });
+
+    picker.addEventListener('input', function () { setColor(picker.value); });
+    setColor(hidden.value);
+  })();
+</script>

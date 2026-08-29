@@ -1,0 +1,43 @@
+<div>
+  <a href="/leagues" class="text-sm text-slate-500 hover:text-slate-700">← دورياتي</a>
+  <h1 class="mt-2 text-3xl font-bold text-slate-900">دوري جديد</h1>
+
+  <% if (error) { %>
+    <div class="mt-4 rounded-lg bg-red-50 border border-red-200 p-3 text-sm text-red-700"><%= error %></div>
+  <% } %>
+
+  <form action="/leagues/new" method="POST" class="mt-8 space-y-4 rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
+    <div>
+      <label class="mb-1.5 block text-sm font-medium text-slate-700">اسم الدوري *</label>
+      <input type="text" name="name" required value="<%= form.name || '' %>" class="block w-full rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-sm shadow-sm focus:border-emerald-500 focus:outline-none focus:ring-1 focus:ring-emerald-500" placeholder="الدوري المغربي 2025/2026">
+    </div>
+    <div>
+      <label class="mb-1.5 block text-sm font-medium text-slate-700">الوصف</label>
+      <textarea name="description" rows="2" class="block w-full rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-sm shadow-sm focus:border-emerald-500 focus:outline-none focus:ring-1 focus:ring-emerald-500"><%= form.description || '' %></textarea>
+    </div>
+    <div class="grid gap-4 sm:grid-cols-2">
+      <div>
+        <label class="mb-1.5 block text-sm font-medium text-slate-700">الموسم *</label>
+        <input type="text" name="season" required value="<%= form.season || '2025/2026' %>" class="block w-full rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-sm shadow-sm focus:border-emerald-500 focus:outline-none focus:ring-1 focus:ring-emerald-500">
+      </div>
+      <div>
+        <label class="mb-1.5 block text-sm font-medium text-slate-700">البلد</label>
+        <input type="text" name="country" value="<%= form.country || 'المغرب' %>" class="block w-full rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-sm shadow-sm focus:border-emerald-500 focus:outline-none focus:ring-1 focus:ring-emerald-500">
+      </div>
+    </div>
+    <div class="grid gap-4 sm:grid-cols-2">
+      <div>
+        <label class="mb-1.5 block text-sm font-medium text-slate-700">عدد الصاعدين</label>
+        <input type="number" name="promoted" min="0" value="2" class="block w-full rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-sm shadow-sm focus:border-emerald-500 focus:outline-none focus:ring-1 focus:ring-emerald-500">
+      </div>
+      <div>
+        <label class="mb-1.5 block text-sm font-medium text-slate-700">عدد النازلين</label>
+        <input type="number" name="relegated" min="0" value="2" class="block w-full rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-sm shadow-sm focus:border-emerald-500 focus:outline-none focus:ring-1 focus:ring-emerald-500">
+      </div>
+    </div>
+    <div class="flex justify-end gap-3 pt-2">
+      <a href="/leagues" class="rounded-lg border border-slate-300 bg-white px-4 py-2.5 text-sm font-semibold text-slate-700 hover:bg-slate-50">إلغاء</a>
+      <button type="submit" class="rounded-lg bg-emerald-600 px-4 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-emerald-700">إنشاء</button>
+    </div>
+  </form>
+</div>

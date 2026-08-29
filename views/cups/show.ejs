@@ -1,0 +1,120 @@
+<div>
+  <a href="/cups" class="text-sm text-slate-500 hover:text-slate-700">← الكؤوس</a>
+  <header class="mt-3 flex flex-wrap items-start justify-between gap-4">
+    <div>
+      <div class="flex items-center gap-3 flex-wrap">
+        <h1 class="text-3xl font-bold text-slate-900">🏆 <%= cup.name %></h1>
+        <span class="rounded-full px-2.5 py-1 text-xs font-semibold
+          <%= cup.status === 'FINISHED' ? 'bg-emerald-100 text-emerald-800' : cup.status === 'IN_PROGRESS' ? 'bg-amber-100 text-amber-800' : 'bg-slate-100 text-slate-700' %>">
+          <%= cup.status === 'FINISHED' ? 'منتهي' : cup.status === 'IN_PROGRESS' ? 'جاري' : 'مسودة' %>
+        </span>
+        <span class="rounded-full bg-slate-100 px-2.5 py-1 text-xs font-medium text-slate-700">
+          <%= cup.type === 'KNOCKOUT' ? 'إقصاء' : 'إقصاء مزدوج' %>
+        </span>
+      </div>
+      <p class="mt-1 text-sm text-slate-600">
+        <%= cup.league_name ? cup.league_name + ' · ' : 'مستقل · ' %>
+        <%= cup.pairing_mode === 'RANDOM' ? 'عشوائي' : 'مرتّب' %>
+      </p>
+    </div>
+    <div class="flex gap-2">
+      <% if (canAdvance && cup.status !== 'FINISHED') { %>
+        <form action="/cups/<%= cup.id %>/advance" method="POST" onsubmit="return confirm('توليد الجولة التالية؟')" class="inline">
+          <button class="rounded-lg bg-emerald-600 px-4 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-emerald-700">▶ الجولة التالية</button>
+        </form>
+      <% } %>
+      <form action="/cups/<%= cup.id %>/delete" method="POST" onsubmit="return confirm('حذف الكأس بالكامل؟')" class="inline">
+        <button class="rounded-lg border border-red-300 bg-white px-4 py-2.5 text-sm font-semibold text-red-700 hover:bg-red-50">🗑️ حذف</button>
+      </form>
+    </div>
+  </header>
+
+  <% if (typeof error !== 'undefined' && error) { %>
+    <div class="mt-4 rounded-lg bg-red-50 border border-red-200 p-3 text-sm text-red-700"><%= error %></div>
+  <% } %>
+
+  <% if (cup.winner_name) { %>
+    <div class="mt-4 rounded-2xl bg-gradient-to-l from-amber-100 to-amber-50 border-2 border-amber-300 p-6 text-center">
+      <div class="text-4xl mb-2">🏆</div>
+      <div class="text-sm text-amber-800">بطل الكأس</div>
+      <div class="text-2xl font-bold text-amber-900 mt-1"><%= cup.winner_name %></div>
+    </div>
+  <% } %>
+
+  <% if (rounds.length === 0) { %>
+    <div class="mt-8 text-sm text-slate-500">لا توجد مباريات بعد.</div>
+  <% } else { %>
+    <div class="mt-8 space-y-6">
+      <% rounds.forEach(r => { %>
+        <section class="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+          <h2 class="text-lg font-bold text-slate-900">
+            <% if (r.bracket === 'LOSERS') { %>الخاسرين -<% } %>
+            <%= r.round_name %>
+            <span class="text-xs font-normal text-slate-500">(<%= r.matches.length %> مباراة)</span>
+          </h2>
+          <div class="mt-4 space-y-2">
+            <% r.matches.forEach(m => { %>
+              <a href="/cups/<%= cup.id %>/matches/<%= m.id %>" class="flex items-center justify-between rounded-lg border border-slate-200 p-3 hover:shadow-md transition <%= m.status === 'FINISHED' ? 'bg-slate-50' : m.status === 'BYE' ? 'bg-amber-50' : 'bg-white' %>">
+                <div class="flex items-center gap-3 flex-1 min-w-0">
+                  <% if (m.home_logo) { %>
+                    <img src="<%= m.home_logo %>" alt="" class="h-7 w-7 rounded-full object-cover" onerror="this.style.display='none'">
+                  <% } else { %>
+                    <div class="h-7 w-7 rounded-full text-[10px] font-bold text-white flex items-center justify-center" style="background-color: <%= m.home_color || '#64748b' %>">
+                      <%= (m.home_short || m.home_name || '?').slice(0, 2).toUpperCase() %>
+                    </div>
+                  <% } %>
+                  <span class="font-semibold text-slate-900 truncate <%= m.winner_team_id === m.home_team_id ? 'text-emerald-700' : '' %>"><%= m.home_name || 'باي' %></span>
+                </div>
+                <div class="px-3 text-sm font-bold text-slate-700 flex items-center gap-2 flex-col">
+                  <% if (m.status === 'FINISHED') { %>
+                    <%# Main 90-min score — if null, infer from ET or show draw placeholder %>
+                    <%
+                      var displayHome = m.home_score;
+                      var displayAway = m.away_score;
+                      if (displayHome == null && m.home_score_et != null) {
+                        // If ET was decisive, 90-min was a draw; show ET as 90-min and the actual ET was X-X→winner
+                        // For clarity, just show the 90-min as 0-0 when missing
+                        displayHome = 0;
+                        displayAway = 0;
+                      }
+                      if (displayHome == null) { displayHome = 0; }
+                      if (displayAway == null) { displayAway = 0; }
+                    %>
+                    <div class="flex items-center gap-2">
+                      <span><%= displayHome %> - <%= displayAway %></span>
+                      <span class="text-emerald-600">✓</span>
+                    </div>
+                    <%# ET sub-line %>
+                    <% if (m.decided_by === 'EXTRA_TIME' && m.home_score_et != null) { %>
+                      <div class="text-[10px] text-blue-600 font-normal">⏱ <%= m.home_score_et %> - <%= m.away_score_et %></div>
+                    <% } else if (m.decided_by === 'PENALTIES' && m.home_penalties != null) { %>
+                      <%# Penalties sub-line (with optional ET) %>
+                      <div class="text-[10px] text-purple-600 font-normal">
+                        🎯 <%= m.home_penalties %> - <%= m.away_penalties %>
+                        <% if (m.home_score_et != null) { %>(<%= m.home_score_et %>-<%= m.away_score_et %>)<% } %>
+                      </div>
+                    <% } %>
+                  <% } else if (m.status === 'BYE') { %>
+                    <span>—</span>
+                  <% } else { %>
+                    <span class="text-slate-400">×</span>
+                  <% } %>
+                </div>
+                <div class="flex items-center gap-3 flex-1 min-w-0 justify-end">
+                  <span class="font-semibold text-slate-900 truncate <%= m.winner_team_id === m.away_team_id ? 'text-emerald-700' : '' %>"><%= m.away_name || 'باي' %></span>
+                  <% if (m.away_logo) { %>
+                    <img src="<%= m.away_logo %>" alt="" class="h-7 w-7 rounded-full object-cover" onerror="this.style.display='none'">
+                  <% } else { %>
+                    <div class="h-7 w-7 rounded-full text-[10px] font-bold text-white flex items-center justify-center" style="background-color: <%= m.away_color || '#64748b' %>">
+                      <%= (m.away_short || m.away_name || '?').slice(0, 2).toUpperCase() %>
+                    </div>
+                  <% } %>
+                </div>
+              </a>
+            <% }); %>
+          </div>
+        </section>
+      <% }); %>
+    </div>
+  <% } %>
+</div>

@@ -1,0 +1,40 @@
+<div>
+  <a href="/leagues/<%= league.id %>" class="text-sm text-slate-500 hover:text-slate-700">← <%= league.name %></a>
+  <h1 class="mt-2 text-3xl font-bold text-slate-900">قسم جديد</h1>
+
+  <% if (error) { %>
+    <div class="mt-4 rounded-lg bg-red-50 border border-red-200 p-3 text-sm text-red-700"><%= error %></div>
+  <% } %>
+
+  <form action="/leagues/<%= league.id %>/sections/new" method="POST" class="mt-8 space-y-4 rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
+    <div>
+      <label class="mb-1.5 block text-sm font-medium text-slate-700">اسم القسم *</label>
+      <input type="text" name="name" required value="<%= form.name || '' %>" class="block w-full rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-sm shadow-sm focus:border-emerald-500 focus:outline-none focus:ring-1 focus:ring-emerald-500" placeholder="المجموعة الأولى">
+    </div>
+    <div>
+      <label class="mb-1.5 block text-sm font-medium text-slate-700">ملاحظات</label>
+      <textarea name="notes" rows="2" class="block w-full rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-sm shadow-sm focus:border-emerald-500 focus:outline-none focus:ring-1 focus:ring-emerald-500"><%= form.notes || '' %></textarea>
+    </div>
+    <div>
+      <label class="mb-1.5 block text-sm font-medium text-slate-700">الترتيب</label>
+      <input type="number" name="order" min="0" value="<%= form.order || 0 %>" class="block w-full rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-sm shadow-sm focus:border-emerald-500 focus:outline-none focus:ring-1 focus:ring-emerald-500">
+    </div>
+    <div class="rounded-lg bg-blue-50 border border-blue-200 p-3 text-sm text-blue-800">
+      💡 اترك صعود/نزول فارغ لاستخدام إعدادات الدوري (<%= league.promoted_teams_count %> صاعد، <%= league.relegated_teams_count %> نازل)
+    </div>
+    <div class="grid gap-4 sm:grid-cols-2">
+      <div>
+        <label class="mb-1.5 block text-sm font-medium text-slate-700">صاعد (تجاوز)</label>
+        <input type="number" name="promoted" min="0" value="<%= form.promoted || '' %>" placeholder="<%= league.promoted_teams_count %>" class="block w-full rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-sm shadow-sm focus:border-emerald-500 focus:outline-none focus:ring-1 focus:ring-emerald-500">
+      </div>
+      <div>
+        <label class="mb-1.5 block text-sm font-medium text-slate-700">نازل (تجاوز)</label>
+        <input type="number" name="relegated" min="0" value="<%= form.relegated || '' %>" placeholder="<%= league.relegated_teams_count %>" class="block w-full rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-sm shadow-sm focus:border-emerald-500 focus:outline-none focus:ring-1 focus:ring-emerald-500">
+      </div>
+    </div>
+    <div class="flex justify-end gap-3 pt-2">
+      <a href="/leagues/<%= league.id %>" class="rounded-lg border border-slate-300 bg-white px-4 py-2.5 text-sm font-semibold text-slate-700 hover:bg-slate-50">إلغاء</a>
+      <button type="submit" class="rounded-lg bg-emerald-600 px-4 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-emerald-700">إنشاء</button>
+    </div>
+  </form>
+</div>

@@ -1,0 +1,153 @@
+<div>
+  <a href="/leagues/<%= league.id %>/sections/<%= section.id %>" class="text-sm text-slate-500 hover:text-slate-700">← <%= section.name %></a>
+  <header class="mt-3">
+    <h1 class="text-3xl font-bold text-slate-900">🤝 سجل المواجهات المباشرة</h1>
+    <p class="mt-1 text-sm text-slate-600"><%= league.name %> · <%= section.name %> · <%= teams.length %> فريق</p>
+  </header>
+
+  <% if (pairs.length === 0) { %>
+    <div class="mt-8 rounded-2xl border-2 border-dashed border-slate-300 bg-white p-10 text-center">
+      <div class="text-5xl mb-3">🤝</div>
+      <h3 class="font-semibold text-slate-900">لا توجد مواجهات منتهية بعد</h3>
+      <p class="mt-2 text-sm text-slate-500">سجّل نتائج المباريات لرؤية سجل المواجهات المباشرة بين الفرق.</p>
+      <a href="/leagues/<%= league.id %>/sections/<%= section.id %>" class="mt-4 inline-block rounded-lg bg-emerald-600 px-4 py-2 text-sm font-semibold text-white">← العودة للقسم</a>
+    </div>
+  <% } else { %>
+
+    <%# Summary stats per team %>
+    <% 
+      const teamSummary = {};
+      teams.forEach(t => {
+        teamSummary[t.id] = {
+          team: t,
+          totalWins: 0, totalDraws: 0, totalLosses: 0,
+          totalGoalsFor: 0, totalGoalsAgainst: 0,
+          pairsCount: 0,
+        };
+      });
+      pairs.forEach(p => {
+        const a = teamSummary[p.teamA.id];
+        const b = teamSummary[p.teamB.id];
+        a.totalWins += p.aWins;
+        a.totalDraws += p.draws;
+        a.totalLosses += p.bWins;
+        a.totalGoalsFor += p.aGoals;
+        a.totalGoalsAgainst += p.bGoals;
+        a.pairsCount += 1;
+        b.totalWins += p.bWins;
+        b.totalDraws += p.draws;
+        b.totalLosses += p.aWins;
+        b.totalGoalsFor += p.bGoals;
+        b.totalGoalsAgainst += p.aGoals;
+        b.pairsCount += 1;
+      });
+    %>
+
+    <%# H2H matrix (teams × teams) %>
+    <section class="mt-8">
+      <h2 class="text-xl font-bold text-slate-900 mb-3">📊 مصفوفة المواجهات</h2>
+      <div class="overflow-x-auto rounded-xl border border-slate-200 bg-white shadow-sm">
+        <table class="w-full text-sm">
+          <thead>
+            <tr class="bg-slate-50">
+              <th class="px-3 py-2 text-right text-xs font-semibold text-slate-600 sticky right-0 bg-slate-50">الفريق</th>
+              <% teams.forEach(t => { %>
+                <th class="px-2 py-2 text-center text-xs font-semibold" style="color: <%= t.color || '#475569' %>;">
+                  <div class="flex flex-col items-center gap-1">
+                    <% if (t.color) { %>
+                      <span class="h-3 w-3 rounded-full" style="background-color: <%= t.color %>"></span>
+                    <% } %>
+                    <span class="truncate max-w-[80px]"><%= t.short_name || t.name %></span>
+                  </div>
+                </th>
+              <% }); %>
+              <th class="px-2 py-2 text-center text-xs font-bold text-emerald-700">ف</th>
+              <th class="px-2 py-2 text-center text-xs font-bold text-slate-600">ت</th>
+              <th class="px-2 py-2 text-center text-xs font-bold text-red-700">خ</th>
+              <th class="px-2 py-2 text-center text-xs font-bold text-slate-700">له</th>
+              <th class="px-2 py-2 text-center text-xs font-bold text-slate-700">عليه</th>
+            </tr>
+          </thead>
+          <tbody>
+            <% teams.forEach(rowTeam => { %>
+              <tr class="border-t border-slate-100 hover:bg-slate-50">
+                <td class="px-3 py-2 text-right text-sm font-semibold sticky right-0 bg-white" style="color: <%= rowTeam.color || '#475569' %>;">
+                  <% if (rowTeam.color) { %>
+                    <span class="inline-block h-2 w-2 rounded-full mr-1" style="background-color: <%= rowTeam.color %>"></span>
+                  <% } %>
+                  <%= rowTeam.name %>
+                </td>
+                <% teams.forEach(colTeam => { %>
+                  <% if (rowTeam.id === colTeam.id) { %>
+                    <td class="px-2 py-2 text-center bg-slate-100 text-slate-400 text-xs">—</td>
+                  <% } else { %>
+                    <%
+                      var key = rowTeam.id < colTeam.id ? rowTeam.id + '|' + colTeam.id : colTeam.id + '|' + rowTeam.id;
+                      var p = pairs.find(pp => (pp.teamA.id + '|' + pp.teamB.id) === key);
+                      if (p) {
+                        var isRowA = (p.teamA.id === rowTeam.id);
+                        var myWins = isRowA ? p.aWins : p.bWins;
+                        var oppWins = isRowA ? p.bWins : p.aWins;
+                        var draws = p.draws;
+                        var myGoals = isRowA ? p.aGoals : p.bGoals;
+                        var oppGoals = isRowA ? p.bGoals : p.aGoals;
+                        var cellClass = '';
+                        if (myWins > oppWins) cellClass = 'text-emerald-700 font-semibold';
+                        else if (oppWins > myWins) cellClass = 'text-red-700 font-semibold';
+                        else cellClass = 'text-slate-700';
+                    %>
+                      <td class="px-2 py-2 text-center text-xs <%= cellClass %>" title="<%= myWins %> فوز · <%= draws %> تعادل · <%= oppWins %> خسارة">
+                        <span class="block"><%= myGoals %> - <%= oppGoals %></span>
+                        <span class="block text-[9px] text-slate-500">(<%= myWins %>-<%= draws %>-<%= oppWins %>)</span>
+                      </td>
+                    <% } else { %>
+                      <td class="px-2 py-2 text-center text-slate-300 text-xs">·</td>
+                    <% } %>
+                  <% } %>
+                <% }); %>
+                <% var s = teamSummary[rowTeam.id]; %>
+                <td class="px-2 py-2 text-center text-emerald-700 font-bold text-xs"><%= s.totalWins %></td>
+                <td class="px-2 py-2 text-center text-slate-600 font-bold text-xs"><%= s.totalDraws %></td>
+                <td class="px-2 py-2 text-center text-red-700 font-bold text-xs"><%= s.totalLosses %></td>
+                <td class="px-2 py-2 text-center text-slate-700 font-bold text-xs"><%= s.totalGoalsFor %></td>
+                <td class="px-2 py-2 text-center text-slate-700 font-bold text-xs"><%= s.totalGoalsAgainst %></td>
+              </tr>
+            <% }); %>
+          </tbody>
+        </table>
+      </div>
+      <p class="mt-2 text-[11px] text-slate-400">كل خلية: نتيجة (W-D-L) — أخضر: أكثر فوز · أحمر: أكثر خسارة · رمادي: تعادل</p>
+    </section>
+
+    <%# List view (sortable) %>
+    <section class="mt-10">
+      <h2 class="text-xl font-bold text-slate-900 mb-3">📋 كل المواجهات (مرتبة حسب عدد المباريات)</h2>
+      <div class="space-y-2">
+        <% pairs.forEach(p => { %>
+          <div class="rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
+            <div class="flex items-center justify-between gap-3 flex-wrap">
+              <div class="flex items-center gap-3 flex-1">
+                <%# Team A %>
+                <div class="flex items-center gap-2 min-w-0">
+                  <% if (p.teamA.color) { %><span class="h-3 w-3 shrink-0 rounded-full" style="background-color: <%= p.teamA.color %>"></span><% } %>
+                  <span class="font-semibold text-slate-900 truncate"><%= p.teamA.name %></span>
+                </div>
+                <span class="text-sm text-slate-400">×</span>
+                <%# Team B %>
+                <div class="flex items-center gap-2 min-w-0">
+                  <% if (p.teamB.color) { %><span class="h-3 w-3 shrink-0 rounded-full" style="background-color: <%= p.teamB.color %>"></span><% } %>
+                  <span class="font-semibold text-slate-900 truncate"><%= p.teamB.name %></span>
+                </div>
+              </div>
+              <div class="flex items-center gap-2 text-xs">
+                <span class="rounded-full bg-slate-100 px-2 py-1 text-slate-700"><%= p.matches %> مباراة</span>
+                <span class="rounded-full bg-emerald-100 px-2 py-1 text-emerald-800"><%= p.aWins %> - <%= p.draws %> - <%= p.bWins %></span>
+                <span class="rounded-full bg-slate-100 px-2 py-1 text-slate-700 font-mono"><%= p.aGoals %> - <%= p.bGoals %></span>
+              </div>
+            </div>
+          </div>
+        <% }); %>
+      </div>
+    </section>
+  <% } %>
+</div>

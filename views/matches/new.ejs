@@ -1,0 +1,65 @@
+<div>
+  <a href="/leagues/<%= leagueId %>/sections/<%= section.id %>" class="text-sm text-slate-500 hover:text-slate-700">← <%= section.name %></a>
+  <h1 class="mt-2 text-3xl font-bold text-slate-900">مباراة جديدة</h1>
+
+  <% if (error) { %>
+    <div class="mt-4 rounded-lg bg-red-50 border border-red-200 p-3 text-sm text-red-700"><%= error %></div>
+  <% } %>
+
+  <% if (teams.length < 2) { %>
+    <div class="mt-8 rounded-lg bg-amber-50 border border-amber-200 p-4 text-sm text-amber-800">
+      ⚠️ تحتاج فريقين على الأقل لإنشاء مباراة. <a href="/leagues/<%= leagueId %>/sections/<%= section.id %>/teams/new" class="underline font-semibold">أضف فريقاً</a>
+    </div>
+  <% } else { %>
+    <form action="/leagues/<%= leagueId %>/sections/<%= section.id %>/matches/new" method="POST" class="mt-8 space-y-4 rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
+      <div>
+        <label class="mb-1.5 block text-sm font-medium text-slate-700">الجولة</label>
+        <select name="matchdayId" class="block w-full rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-sm shadow-sm focus:border-emerald-500 focus:outline-none focus:ring-1 focus:ring-emerald-500">
+          <option value="">— بدون جولة —</option>
+          <% matchdays.forEach(md => { %>
+            <option value="<%= md.id %>" <%= form.matchdayId === md.id ? 'selected' : '' %>><%= md.name %></option>
+          <% }); %>
+        </select>
+      </div>
+      <div class="grid gap-4 sm:grid-cols-2">
+        <div>
+          <label class="mb-1.5 block text-sm font-medium text-slate-700">الفريق المضيف *</label>
+          <select name="homeTeamId" required class="block w-full rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-sm shadow-sm focus:border-emerald-500 focus:outline-none focus:ring-1 focus:ring-emerald-500">
+            <option value="">اختر...</option>
+            <% teams.forEach(t => { %>
+              <option value="<%= t.id %>"><%= t.name %></option>
+            <% }); %>
+          </select>
+        </div>
+        <div>
+          <label class="mb-1.5 block text-sm font-medium text-slate-700">الفريق الضيف *</label>
+          <select name="awayTeamId" required class="block w-full rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-sm shadow-sm focus:border-emerald-500 focus:outline-none focus:ring-1 focus:ring-emerald-500">
+            <option value="">اختر...</option>
+            <% teams.forEach(t => { %>
+              <option value="<%= t.id %>"><%= t.name %></option>
+            <% }); %>
+          </select>
+        </div>
+      </div>
+      <div>
+        <label class="mb-1.5 block text-sm font-medium text-slate-700">التاريخ والوقت</label>
+        <input type="datetime-local" name="scheduledAt" class="block w-full rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-sm shadow-sm focus:border-emerald-500 focus:outline-none focus:ring-1 focus:ring-emerald-500">
+      </div>
+      <div>
+        <label class="mb-1.5 block text-sm font-medium text-slate-700">الملعب</label>
+        <input type="text" name="venue" class="block w-full rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-sm shadow-sm focus:border-emerald-500 focus:outline-none focus:ring-1 focus:ring-emerald-500" placeholder="ملعب محمد الخامس">
+      </div>
+      <div>
+        <label class="mb-1.5 block text-sm font-medium text-slate-700">الحالة</label>
+        <select name="status" class="block w-full rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-sm shadow-sm focus:border-emerald-500 focus:outline-none focus:ring-1 focus:ring-emerald-500">
+          <option value="SCHEDULED">قادمة</option>
+          <option value="FINISHED">منتهية (تحسب في الترتيب)</option>
+        </select>
+      </div>
+      <div class="flex justify-end gap-3 pt-2">
+        <a href="/leagues/<%= leagueId %>/sections/<%= section.id %>" class="rounded-lg border border-slate-300 bg-white px-4 py-2.5 text-sm font-semibold text-slate-700 hover:bg-slate-50">إلغاء</a>
+        <button type="submit" class="rounded-lg bg-emerald-600 px-4 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-emerald-700">إنشاء</button>
+      </div>
+    </form>
+  <% } %>
+</div>

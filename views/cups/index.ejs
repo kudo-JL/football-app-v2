@@ -1,0 +1,45 @@
+<div>
+  <header class="flex items-center justify-between">
+    <div>
+      <h1 class="text-3xl font-bold text-slate-900">🏆 الكؤوس</h1>
+      <p class="mt-1 text-sm text-slate-600">بطولات خروج المغلوب</p>
+    </div>
+    <a href="/cups/new" class="rounded-lg bg-amber-600 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-amber-700">+ كأس جديد</a>
+  </header>
+
+  <% if (cups.length === 0) { %>
+    <div class="mt-8 rounded-2xl border-2 border-dashed border-slate-300 bg-white p-12 text-center">
+      <div class="text-5xl mb-3">🏆</div>
+      <h3 class="font-semibold text-slate-900">لا توجد كؤوس</h3>
+      <p class="mt-1 text-sm text-slate-600">ابدأ بإنشاء أول بطولة كأس</p>
+      <a href="/cups/new" class="mt-4 inline-block rounded-lg bg-amber-600 px-4 py-2 text-sm font-semibold text-white">+ كأس جديد</a>
+    </div>
+  <% } else { %>
+    <div class="mt-8 space-y-3">
+      <% cups.forEach(c => { %>
+        <a href="/cups/<%= c.id %>" class="block rounded-2xl border border-slate-200 bg-white p-5 shadow-sm transition hover:shadow-md">
+          <div class="flex items-center justify-between">
+            <div>
+              <h3 class="text-lg font-semibold text-slate-900"><%= c.name %></h3>
+              <p class="mt-1 text-sm text-slate-500">
+                <%= c.league_name ? c.league_name + ' · ' : 'مستقل · ' %>
+                <%= c.type === 'KNOCKOUT' ? 'خروج المغلوب' : 'إقصاء مزدوج' %> ·
+                <%= c.pairing_mode === 'RANDOM' ? 'عشوائي' : 'مرتّب' %> ·
+                <%= c.match_count %> مباراة
+              </p>
+            </div>
+            <div class="flex flex-col items-end gap-1">
+              <span class="rounded-full px-3 py-1 text-xs font-semibold
+                <%= c.status === 'FINISHED' ? 'bg-emerald-100 text-emerald-800' : c.status === 'IN_PROGRESS' ? 'bg-amber-100 text-amber-800' : 'bg-slate-100 text-slate-700' %>">
+                <%= c.status === 'FINISHED' ? 'منتهي' : c.status === 'IN_PROGRESS' ? 'جاري' : 'مسودة' %>
+              </span>
+              <% if (c.winner_name) { %>
+                <span class="text-xs text-emerald-700 font-semibold">🏆 <%= c.winner_name %></span>
+              <% } %>
+            </div>
+          </div>
+        </a>
+      <% }); %>
+    </div>
+  <% } %>
+</div>

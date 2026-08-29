@@ -1,0 +1,164 @@
+<div>
+  <a href="/leagues/<%= leagueId %>/sections/<%= section.id %>" class="text-sm text-slate-500 hover:text-slate-700">← <%= section.name %></a>
+  <h1 class="mt-2 text-3xl font-bold text-slate-900">تعديل مباراة</h1>
+
+  <% if (error) { %>
+    <div class="mt-4 rounded-lg bg-red-50 border border-red-200 p-3 text-sm text-red-700"><%= error %></div>
+  <% } %>
+  <% if (saved) { %>
+    <div id="saved-msg" class="mt-4 rounded-lg bg-emerald-50 border border-emerald-200 p-3 text-sm text-emerald-800 flex items-center justify-between">
+      <span>✅ تم الحفظ</span>
+      <a href="/leagues/<%= leagueId %>/sections/<%= section.id %>" class="text-emerald-700 hover:text-emerald-900 font-medium">→ العودة للقسم</a>
+    </div>
+  <% } %>
+
+  <form id="matchForm" action="/leagues/<%= leagueId %>/sections/<%= section.id %>/matches/<%= match.id %>/edit" method="POST" class="mt-8 space-y-4 rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
+    <div>
+      <label class="mb-1.5 block text-sm font-medium text-slate-700">الجولة</label>
+      <select name="matchdayId" class="block w-full rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-sm shadow-sm focus:border-emerald-500 focus:outline-none focus:ring-1 focus:ring-emerald-500">
+        <option value="">— بدون جولة —</option>
+        <% matchdays.forEach(md => { %>
+          <option value="<%= md.id %>" <%= match.matchday_id === md.id ? 'selected' : '' %>><%= md.name %></option>
+        <% }); %>
+      </select>
+    </div>
+    <div class="grid gap-4 sm:grid-cols-2">
+      <div>
+        <label class="mb-1.5 block text-sm font-medium text-slate-700">المضيف *</label>
+        <select name="homeTeamId" required class="block w-full rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-sm shadow-sm focus:border-emerald-500 focus:outline-none focus:ring-1 focus:ring-emerald-500">
+          <% teams.forEach(t => { %>
+            <option value="<%= t.id %>" <%= match.home_team_id === t.id ? 'selected' : '' %>><%= t.name %></option>
+          <% }); %>
+        </select>
+      </div>
+      <div>
+        <label class="mb-1.5 block text-sm font-medium text-slate-700">الضيف *</label>
+        <select name="awayTeamId" required class="block w-full rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-sm shadow-sm focus:border-emerald-500 focus:outline-none focus:ring-1 focus:ring-emerald-500">
+          <% teams.forEach(t => { %>
+            <option value="<%= t.id %>" <%= match.away_team_id === t.id ? 'selected' : '' %>><%= t.name %></option>
+          <% }); %>
+        </select>
+      </div>
+    </div>
+    <div>
+      <label class="mb-1.5 block text-sm font-medium text-slate-700">التاريخ والوقت</label>
+      <input type="datetime-local" name="scheduledAt" value="<%= match.scheduled_at ? new Date(match.scheduled_at).toISOString().slice(0,16) : '' %>" class="block w-full rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-sm shadow-sm focus:border-emerald-500 focus:outline-none focus:ring-1 focus:ring-emerald-500">
+    </div>
+    <div>
+      <label class="mb-1.5 block text-sm font-medium text-slate-700">الملعب</label>
+      <input type="text" name="venue" value="<%= match.venue || '' %>" class="block w-full rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-sm shadow-sm focus:border-emerald-500 focus:outline-none focus:ring-1 focus:ring-emerald-500">
+    </div>
+    <div>
+      <label class="mb-1.5 block text-sm font-medium text-slate-700">الحالة</label>
+      <select id="statusSelect" name="status" class="block w-full rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-sm shadow-sm focus:border-emerald-500 focus:outline-none focus:ring-1 focus:ring-emerald-500">
+        <option value="SCHEDULED" <%= match.status === 'SCHEDULED' ? 'selected' : '' %>>قادمة</option>
+        <option value="LIVE" <%= match.status === 'LIVE' ? 'selected' : '' %>>مباشرة</option>
+        <option value="FINISHED" <%= match.status === 'FINISHED' ? 'selected' : '' %>>منتهية</option>
+        <option value="POSTPONED" <%= match.status === 'POSTPONED' ? 'selected' : '' %>>مؤجلة</option>
+        <option value="CANCELLED" <%= match.status === 'CANCELLED' ? 'selected' : '' %>>ملغاة</option>
+      </select>
+    </div>
+    <!-- Compact score row with team names + inputs together -->
+    <div>
+      <label class="mb-1.5 block text-sm font-medium text-slate-700">النتيجة</label>
+      <div class="rounded-xl bg-slate-50 p-3">
+        <div class="flex items-center justify-between gap-3">
+          <div class="flex items-center gap-2 min-w-0 flex-1 justify-end">
+            <span class="font-semibold text-slate-900 truncate"><%= homeTeam ? homeTeam.name : '?' %></span>
+            <% if (homeTeam && homeTeam.color) { %>
+              <div class="h-8 w-8 shrink-0 rounded-full text-xs font-bold text-white flex items-center justify-center" style="background-color: <%= homeTeam.color %>">
+                <%= (homeTeam.short_name || homeTeam.name || '?').slice(0, 2).toUpperCase() %>
+              </div>
+            <% } else { %>
+              <div class="h-8 w-8 shrink-0 rounded-full bg-slate-300"></div>
+            <% } %>
+          </div>
+          <div class="flex items-center gap-1.5 shrink-0">
+            <input id="homeScore" type="number" name="homeScore" min="0" value="<%= match.home_score || 0 %>" class="w-12 text-center text-xl font-bold rounded-lg border border-slate-300 px-1 py-1.5 focus:border-emerald-500 focus:outline-none focus:ring-1 focus:ring-emerald-500">
+            <span class="text-xl font-bold text-slate-400">-</span>
+            <input id="awayScore" type="number" name="awayScore" min="0" value="<%= match.away_score || 0 %>" class="w-12 text-center text-xl font-bold rounded-lg border border-slate-300 px-1 py-1.5 focus:border-emerald-500 focus:outline-none focus:ring-1 focus:ring-emerald-500">
+          </div>
+          <div class="flex items-center gap-2 min-w-0 flex-1">
+            <% if (awayTeam && awayTeam.color) { %>
+              <div class="h-8 w-8 shrink-0 rounded-full text-xs font-bold text-white flex items-center justify-center" style="background-color: <%= awayTeam.color %>">
+                <%= (awayTeam.short_name || awayTeam.name || '?').slice(0, 2).toUpperCase() %>
+              </div>
+            <% } else { %>
+              <div class="h-8 w-8 shrink-0 rounded-full bg-slate-300"></div>
+            <% } %>
+            <span class="font-semibold text-slate-900 truncate"><%= awayTeam ? awayTeam.name : '?' %></span>
+          </div>
+        </div>
+      </div>
+      <div class="mt-2 flex flex-wrap items-center gap-2">
+        <button type="button" onclick="var h=document.getElementById('homeScore'),a=document.getElementById('awayScore'),s=document.getElementById('statusSelect');if(!h||!a){alert('خطأ');return false;}h.value=Math.floor(Math.random()*6);a.value=Math.floor(Math.random()*6);if(s)s.value='FINISHED';return false;" class="rounded-lg border border-purple-300 bg-purple-50 px-3 py-1.5 text-xs font-semibold text-purple-700 hover:bg-purple-100" title="تعبئة بنتيجة عشوائية">
+          🎲 نتيجة عشوائية
+        </button>
+        <button type="button" onclick="var h=document.getElementById('homeScore'),a=document.getElementById('awayScore'),s=document.getElementById('statusSelect');if(!h||!a){alert('خطأ');return false;}var hh=Math.floor(Math.random()*6),aa=Math.floor(Math.random()*6);if(Math.random()<0.3)hh=Math.min(5,hh+1);if(Math.random()<0.15)aa=Math.max(0,aa-1);h.value=hh;a.value=aa;if(s)s.value='FINISHED';return false;" class="rounded-lg border border-emerald-300 bg-emerald-50 px-3 py-1.5 text-xs font-semibold text-emerald-700 hover:bg-emerald-100" title="فوز عشوائي معقول (المضيف غالباً يفوز)">
+          🎲 فوز معقول
+        </button>
+        <span class="text-xs text-slate-500">أو ادخل النتيجة يدوياً</span>
+      </div>
+    </div>
+
+    <div class="flex justify-between pt-4">
+      <div class="flex gap-2">
+        <button type="button" onclick="if(confirm('حذف المباراة نهائياً؟')){document.getElementById('deleteMatchForm').submit();}" class="rounded-lg border border-red-300 bg-white px-4 py-2.5 text-sm font-semibold text-red-700 hover:bg-red-50">🗑️ حذف</button>
+        <% if (match.status === 'FINISHED' && (match.home_score > 0 || match.away_score > 0 || match.home_score === 0)) { %>
+          <button type="button" onclick="if(confirm('مسح النتيجة؟ تبقى المباراة لكن النتيجة تُصفّر')){document.getElementById('clearResultForm').submit();}" class="rounded-lg border border-amber-300 bg-white px-4 py-2.5 text-sm font-semibold text-amber-700 hover:bg-amber-50">🧹 مسح النتيجة</button>
+        <% } %>
+      </div>
+      <div class="flex gap-3">
+        <%# Hidden field: where to redirect after save %>
+        <input type="hidden" name="redirect" value="<%= match.matchday_id ? ('/leagues/' + leagueId + '/sections/' + section.id + '/matchdays/' + match.matchday_id) : ('/leagues/' + leagueId + '/sections/' + section.id) %>">
+        <% if (match.matchday_id) { %>
+          <a href="/leagues/<%= leagueId %>/sections/<%= section.id %>/matchdays/<%= match.matchday_id %>" class="rounded-lg border border-slate-300 bg-white px-4 py-2.5 text-sm font-semibold text-slate-700 hover:bg-slate-50">الجولة</a>
+        <% } %>
+        <a href="/leagues/<%= leagueId %>/sections/<%= section.id %>" class="rounded-lg border border-slate-300 bg-white px-4 py-2.5 text-sm font-semibold text-slate-700 hover:bg-slate-50">القسم</a>
+        <button type="submit" class="rounded-lg bg-emerald-600 px-4 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-emerald-700">حفظ</button>
+      </div>
+    </div>
+  </form>
+</div>
+
+<%# Separate forms for delete + clear result (outside the edit form) %>
+<form id="deleteMatchForm" action="/leagues/<%= leagueId %>/sections/<%= section.id %>/matches/<%= match.id %>/delete" method="POST" style="display:none;"></form>
+<form id="clearResultForm" action="/leagues/<%= leagueId %>/sections/<%= section.id %>/matches/<%= match.id %>/clear" method="POST" style="display:none;"></form>
+  </form>
+</div>
+
+<script>
+  // Global function callable from inline onclick handlers
+  window.__faFillRandom = function (homeBias) {
+    var home = document.getElementById('homeScore');
+    var away = document.getElementById('awayScore');
+    var status = document.getElementById('statusSelect');
+    if (!home || !away) {
+      alert('خطأ: لم يتم العثور على حقول النتيجة');
+      return;
+    }
+    function randInt(min, max) {
+      return Math.floor(Math.random() * (max - min + 1)) + min;
+    }
+    var h = randInt(0, 5);
+    var a = randInt(0, 5);
+    if (homeBias > 0) {
+      if (Math.random() < homeBias) h = Math.min(5, h + 1);
+      if (Math.random() < homeBias / 2) a = Math.max(0, a - 1);
+    }
+    home.value = h;
+    away.value = a;
+    if (status) status.value = 'FINISHED';
+    console.log('[FootballApp] Random:', h, '-', a);
+  };
+
+  // Auto-hide success message after 5 seconds
+  setTimeout(function () {
+    var msg = document.getElementById('saved-msg');
+    if (msg) {
+      msg.style.transition = 'opacity 0.5s';
+      msg.style.opacity = '0';
+      setTimeout(function () { if (msg.parentNode) msg.remove(); }, 500);
+    }
+  }, 5000);
+</script>
