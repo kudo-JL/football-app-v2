@@ -1,0 +1,17 @@
+# Files not needed in the Docker image
+node_modules
+data/football.db
+data/football.db-*
+data/admin-debug.log
+public/uploads/teams/*
+!public/uploads/teams/.gitkeep
+.git
+.gitignore
+*.log
+.DS_Store
+*.ps1
+*.bat
+README.md
+QUICKSTART.txt
+docs/
+FLY_DEPLOY.md

@@ -1,0 +1,46 @@
+# fly.toml — Fly.io configuration for football-app
+# Docs: https://fly.io/docs/reference/configuration/
+
+app = "football-app-lotfi"  # change to your unique app name
+primary_region = "cdg"      # Paris (closest to Morocco). Use "mad" for Madrid.
+
+[build]
+  dockerfile = "Dockerfile"
+
+[env]
+  NODE_ENV = "production"
+  PORT = "3000"
+  # Optional but recommended: a long random string for cookie signing
+  # SESSION_SECRET = "change-me-to-a-long-random-string"
+
+[http_service]
+  internal_port = 3000
+  force_https = true
+  auto_stop_machines = "stop"
+  auto_start_machines = true
+  min_machines_running = 0
+  processes = ["app"]
+
+  [http_service.concurrency]
+    type = "connections"
+    hard_limit = 100
+    soft_limit = 80
+
+  [[http_service.checks]]
+    interval = "30s"
+    timeout = "3s"
+    grace_period = "10s"
+    method = "GET"
+    path = "/health"
+
+[[vm]]
+  size = "shared-cpu-1x"
+  memory = "256mb"
+  cpus = 1
+
+# Persistent volume for the SQLite database
+# IMPORTANT: Without this, your data is lost on every redeploy.
+# Free tier includes 1GB of volume storage.
+[[mounts]]
+  source = "football_data"
+  destination = "/app/data"
