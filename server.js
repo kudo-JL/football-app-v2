@@ -52,6 +52,7 @@ app.use(require('./routes/fixtures'));
 app.use(require('./routes/players'));
 app.use('/cups', require('./routes/cups'));
 app.use('/admin', require('./routes/admin'));
+app.use('/', require('./routes/legal'));
 
 // 404
 app.use((req, res) => {

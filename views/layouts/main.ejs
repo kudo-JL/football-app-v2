@@ -88,7 +88,7 @@
     <div class="mx-auto flex max-w-6xl items-center justify-between gap-4 px-6 py-3">
       <a href="/" class="text-xl font-bold text-emerald-600">⚽ <%= appName %></a>
       <div class="flex items-center gap-4 flex-wrap">
-        <a href="/leagues" class="text-sm font-medium text-slate-700 hover:text-emerald-600">الدوريات</a>
+        <a href="/" class="text-sm font-medium text-slate-700 hover:text-emerald-600">🏠 الرئيسية</a> <a href="/leagues" class="text-sm font-medium text-slate-700 hover:text-emerald-600">الدوريات</a>
         <% if (user) { %>
           <a href="/cups" class="text-sm font-medium text-slate-700 hover:text-amber-600">الكؤوس</a>
           <a href="/leagues/new" class="text-sm font-medium text-slate-700 hover:text-emerald-600">+ دوري</a>
@@ -117,8 +117,20 @@
     <%- body %>
   </main>
 
-  <footer class="mt-12 border-t border-slate-200 bg-white py-6 text-center text-xs text-slate-500">
-    <%= appName %> · مبني بـ Express + SQLite · <a href="/health" class="text-slate-400 hover:text-slate-600">health</a>
+  <footer class="mt-12 border-t border-slate-200 bg-white py-6 text-xs text-slate-500">
+    <div class="mx-auto max-w-6xl px-6 flex flex-wrap items-center justify-between gap-3">
+      <div>
+        <strong>Lotfi</strong> · sport.lotfi.ma
+        <span class="mx-2 text-slate-300">|</span>
+        <span>© 2026</span>
+      </div>
+      <div class="flex items-center gap-4 flex-wrap">
+        <a href="/privacy" class="hover:text-slate-700 hover:underline">سياسة الخصوصية</a>
+        <a href="/terms" class="hover:text-slate-700 hover:underline">شروط الاستخدام</a>
+        <a href="mailto:support@lotfi.ma" class="hover:text-slate-700 hover:underline">اتصل بنا</a>
+        <a href="/health" class="text-slate-400 hover:text-slate-600">health</a>
+      </div>
+    </div>
   </footer>
 
   <script>

@@ -7,7 +7,7 @@ const db = require('../lib/db');
 const auth = require('../lib/auth');
 const { persistFixture } = require('../lib/fixtures');
 
-router.use(auth.requireAuth);
+// Auth applied per-route below
 
 function getOwnedSection(leagueId, sectionId, userId) {
   return db
@@ -20,7 +20,7 @@ function getOwnedSection(leagueId, sectionId, userId) {
 }
 
 // POST /leagues/:leagueId/sections/:sectionId/generate-fixture
-router.post('/leagues/:leagueId/sections/:sectionId/generate-fixture', (req, res) => {
+router.post('/leagues/:leagueId/sections/:sectionId/generate-fixture', auth.requireAuth, (req, res) => {
   const section = getOwnedSection(req.params.leagueId, req.params.sectionId, req.user.id);
   if (!section) return res.status(404).send('القسم غير موجود');
 

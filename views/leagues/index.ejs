@@ -1,12 +1,20 @@
 <div>
+  <nav class="text-sm text-slate-500 mb-3">
+    <a href="/" class="hover:text-emerald-600 hover:underline">🏠 الرئيسية</a>
+    <span class="mx-2 text-slate-300">/</span>
+    <span class="text-slate-700"><%= user ? 'دورياتي' : 'كل الدوريات' %></span>
+  </nav>
   <header class="flex items-center justify-between flex-wrap gap-2">
     <div>
       <h1 class="text-3xl font-bold text-slate-900"><%= user ? 'دورياتي' : 'كل الدوريات' %></h1>
       <p class="mt-1 text-sm text-slate-600"><%= leagues.length %> دوري</p>
     </div>
-    <% if (user) { %>
-      <a href="/leagues/new" class="rounded-lg bg-emerald-600 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-emerald-700">+ دوري جديد</a>
-    <% } %>
+    <div class="flex items-center gap-2 flex-wrap">
+      <a href="/" class="rounded-lg border border-slate-300 bg-white px-4 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50">← الرئيسية</a>
+      <% if (user) { %>
+        <a href="/leagues/new" class="rounded-lg bg-emerald-600 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-emerald-700">+ دوري جديد</a>
+      <% } %>
+    </div>
   </header>
 
   <% if (leagues.length === 0) { %>

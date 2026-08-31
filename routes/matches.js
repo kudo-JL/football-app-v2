@@ -4,7 +4,7 @@ const db = require('../lib/db');
 const auth = require('../lib/auth');
 const { recalcTeam } = require('../lib/stats');
 
-router.use(auth.requireAuth);
+// Auth applied per-route below
 
 function getOwnedSection(leagueId, sectionId, user) {
   const section = db
@@ -20,7 +20,7 @@ function getOwnedSection(leagueId, sectionId, user) {
   return section;
 }
 
-router.get('/leagues/:leagueId/sections/:sectionId/matches/new', (req, res) => {
+router.get('/leagues/:leagueId/sections/:sectionId/matches/new', auth.requireAuth, (req, res) => {
   const section = getOwnedSection(req.params.leagueId, req.params.sectionId, req.user);
   if (!section) return res.status(404).send('القسم غير موجود');
   const matchdayId = req.query.matchdayId || '';
@@ -45,7 +45,7 @@ router.get('/leagues/:leagueId/sections/:sectionId/matches/new', (req, res) => {
   });
 });
 
-router.post('/leagues/:leagueId/sections/:sectionId/matches/new', (req, res) => {
+router.post('/leagues/:leagueId/sections/:sectionId/matches/new', auth.requireAuth, (req, res) => {
   const section = getOwnedSection(req.params.leagueId, req.params.sectionId, req.user);
   if (!section) return res.status(404).send('القسم غير موجود');
   const { homeTeamId, awayTeamId, matchdayId, scheduledAt, venue, status, homeScore, awayScore } = req.body || {};
@@ -83,7 +83,7 @@ router.post('/leagues/:leagueId/sections/:sectionId/matches/new', (req, res) => 
   res.redirect(`/leagues/${req.params.leagueId}/sections/${section.id}/matchdays/${matchdayId || ''}`);
 });
 
-router.get('/leagues/:leagueId/sections/:sectionId/matches/:id/edit', (req, res) => {
+router.get('/leagues/:leagueId/sections/:sectionId/matches/:id/edit', auth.requireAuth, (req, res) => {
   const section = getOwnedSection(req.params.leagueId, req.params.sectionId, req.user);
   if (!section) return res.status(404).send('القسم غير موجود');
   const match = db
@@ -112,7 +112,7 @@ router.get('/leagues/:leagueId/sections/:sectionId/matches/:id/edit', (req, res)
   });
 });
 
-router.post('/leagues/:leagueId/sections/:sectionId/matches/:id/edit', (req, res) => {
+router.post('/leagues/:leagueId/sections/:sectionId/matches/:id/edit', auth.requireAuth, (req, res) => {
   const section = getOwnedSection(req.params.leagueId, req.params.sectionId, req.user);
   if (!section) return res.status(404).send('القسم غير موجود');
   const { homeTeamId, awayTeamId, matchdayId, scheduledAt, venue, status, homeScore, awayScore, redirect } = req.body || {};
@@ -154,7 +154,7 @@ router.post('/leagues/:leagueId/sections/:sectionId/matches/:id/edit', (req, res
   res.redirect(target);
 });
 
-router.post('/leagues/:leagueId/sections/:sectionId/matches/:id/delete', (req, res) => {
+router.post('/leagues/:leagueId/sections/:sectionId/matches/:id/delete', auth.requireAuth, (req, res) => {
   const section = getOwnedSection(req.params.leagueId, req.params.sectionId, req.user);
   if (!section) return res.status(404).send('القسم غير موجود');
   const m = db.prepare('SELECT home_team_id, away_team_id FROM matches WHERE id = ?').get(req.params.id);
@@ -167,7 +167,7 @@ router.post('/leagues/:leagueId/sections/:sectionId/matches/:id/delete', (req, r
 });
 
 // Clear the result of a match (keep the match, reset scores to 0 + status SCHEDULED)
-router.post('/leagues/:leagueId/sections/:sectionId/matches/:id/clear', (req, res) => {
+router.post('/leagues/:leagueId/sections/:sectionId/matches/:id/clear', auth.requireAuth, (req, res) => {
   const section = getOwnedSection(req.params.leagueId, req.params.sectionId, req.user);
   if (!section) return res.status(404).send('القسم غير موجود');
   const m = db.prepare('SELECT home_team_id, away_team_id, matchday_id FROM matches WHERE id = ?').get(req.params.id);

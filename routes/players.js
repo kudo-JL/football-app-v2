@@ -6,7 +6,7 @@ const router = express.Router();
 const db = require('../lib/db');
 const auth = require('../lib/auth');
 
-router.use(auth.requireAuth);
+// Auth applied per-route below
 
 // Helper: ownership (owner or admin)
 function getOwnedTeam(leagueId, sectionId, teamId, user) {
@@ -24,7 +24,7 @@ function getOwnedTeam(leagueId, sectionId, teamId, user) {
 }
 
 // List players of a team
-router.get('/leagues/:leagueId/sections/:sectionId/teams/:teamId/players', (req, res) => {
+router.get('/leagues/:leagueId/sections/:sectionId/teams/:teamId/players', auth.requireAuth, (req, res) => {
   const ctx = getOwnedTeam(req.params.leagueId, req.params.sectionId, req.params.teamId, req.user);
   if (!ctx) return res.status(404).send('الفريق غير موجود');
   const players = db
@@ -41,7 +41,7 @@ router.get('/leagues/:leagueId/sections/:sectionId/teams/:teamId/players', (req,
 });
 
 // New player form
-router.get('/leagues/:leagueId/sections/:sectionId/teams/:teamId/players/new', (req, res) => {
+router.get('/leagues/:leagueId/sections/:sectionId/teams/:teamId/players/new', auth.requireAuth, (req, res) => {
   const ctx = getOwnedTeam(req.params.leagueId, req.params.sectionId, req.params.teamId, req.user);
   if (!ctx) return res.status(404).send('الفريق غير موجود');
   res.render('players/new', {
@@ -55,7 +55,7 @@ router.get('/leagues/:leagueId/sections/:sectionId/teams/:teamId/players/new', (
 });
 
 // Create player
-router.post('/leagues/:leagueId/sections/:sectionId/teams/:teamId/players/new', (req, res) => {
+router.post('/leagues/:leagueId/sections/:sectionId/teams/:teamId/players/new', auth.requireAuth, (req, res) => {
   const ctx = getOwnedTeam(req.params.leagueId, req.params.sectionId, req.params.teamId, req.user);
   if (!ctx) return res.status(404).send('الفريق غير موجود');
   const { name, jerseyNumber, birthDate, position, photo, notes } = req.body || {};
@@ -87,7 +87,7 @@ router.post('/leagues/:leagueId/sections/:sectionId/teams/:teamId/players/new', 
 });
 
 // Edit player form
-router.get('/leagues/:leagueId/sections/:sectionId/teams/:teamId/players/:id/edit', (req, res) => {
+router.get('/leagues/:leagueId/sections/:sectionId/teams/:teamId/players/:id/edit', auth.requireAuth, (req, res) => {
   const ctx = getOwnedTeam(req.params.leagueId, req.params.sectionId, req.params.teamId, req.user);
   if (!ctx) return res.status(404).send('الفريق غير موجود');
   const player = db.prepare('SELECT * FROM players WHERE id = ? AND team_id = ?').get(req.params.id, ctx.team.id);
@@ -103,7 +103,7 @@ router.get('/leagues/:leagueId/sections/:sectionId/teams/:teamId/players/:id/edi
 });
 
 // Update player
-router.post('/leagues/:leagueId/sections/:sectionId/teams/:teamId/players/:id/edit', (req, res) => {
+router.post('/leagues/:leagueId/sections/:sectionId/teams/:teamId/players/:id/edit', auth.requireAuth, (req, res) => {
   const ctx = getOwnedTeam(req.params.leagueId, req.params.sectionId, req.params.teamId, req.user);
   if (!ctx) return res.status(404).send('الفريق غير موجود');
   const player = db.prepare('SELECT * FROM players WHERE id = ? AND team_id = ?').get(req.params.id, ctx.team.id);
@@ -134,7 +134,7 @@ router.post('/leagues/:leagueId/sections/:sectionId/teams/:teamId/players/:id/ed
 });
 
 // Delete player
-router.post('/leagues/:leagueId/sections/:sectionId/teams/:teamId/players/:id/delete', (req, res) => {
+router.post('/leagues/:leagueId/sections/:sectionId/teams/:teamId/players/:id/delete', auth.requireAuth, (req, res) => {
   const ctx = getOwnedTeam(req.params.leagueId, req.params.sectionId, req.params.teamId, req.user);
   if (!ctx) return res.status(404).send('الفريق غير موجود');
   db.prepare('DELETE FROM players WHERE id = ? AND team_id = ?').run(req.params.id, ctx.team.id);
