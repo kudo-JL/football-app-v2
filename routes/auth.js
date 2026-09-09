@@ -113,7 +113,7 @@ router.get('/resend-verification', (req, res) => {
   sendVerificationEmail(email, user.name, token).catch((e) => {
     console.error('[email] Failed to resend:', e.message);
   });
-  res.render('auth/check-email', { title: 'إعادة إرسال', email, devMode: require('../lib/email').isDevMode(), resendDone: true });
+    res.render('auth/check-email', { title: 'إعادة إرسال', email, devMode: require('../lib/email').isDevMode(), resendDone: true, alreadyVerified: false });
 });
 
 router.post('/logout', (req, res) => {
