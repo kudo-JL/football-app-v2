@@ -149,13 +149,17 @@ router.post('/users/:id/delete', auth.requireSuperAdmin, (req, res) => {
     )
     .all(targetId);
 
-  // Use a transaction so the delete is atomic
-  const deleteTx = db.transaction(() => {
+    // Use explicit transaction (node:sqlite has no db.transaction)
+  db.exec('BEGIN');
+  try {
     // FK ON DELETE CASCADE handles leagues → sections → matchdays → teams → players → matches
     // and cups → cup_matches. So deleting the user cascades all related rows.
     db.prepare('DELETE FROM users WHERE id = ?').run(targetId);
-  });
-  deleteTx();
+    db.exec('COMMIT');
+  } catch (e) {
+    db.exec('ROLLBACK');
+    throw e;
+  }
 
   // Clean up logo files from disk (best effort — don't fail if a file is missing)
   logos.forEach((row) => {
