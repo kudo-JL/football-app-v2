@@ -3,11 +3,9 @@ const router = express.Router();
 const db = require('../lib/db');
 const auth = require('../lib/auth');
 const { sendVerificationEmail } = require('../lib/email');
-
 router.get('/login', (req, res) => {
   res.render('auth/login', { title: 'تسجيل الدخول', error: null, info: req.query.info || null });
 });
-
 router.post('/login', (req, res) => {
   const { email, password } = req.body || {};
   if (!email || !password) {
@@ -27,11 +25,9 @@ router.post('/login', (req, res) => {
   auth.issueSession(res, user);
   res.redirect('/');
 });
-
 router.get('/register', (req, res) => {
   res.render('auth/register', { title: 'إنشاء حساب', error: null });
 });
-
 router.post('/register', (req, res) => {
   const { name, email, password, passwordConfirm } = req.body || {};
   if (!name || !email || !password) {
@@ -49,20 +45,17 @@ router.post('/register', (req, res) => {
   }
   const count = db.prepare('SELECT COUNT(*) AS n FROM users').get().n;
   const role = count === 0 ? 'ADMIN' : 'USER';
-  const isSuperAdmin = count === 0 ? 1 : 0;  // First registered user is the super admin
+  const isSuperAdmin = count === 0 ? 1 : 0;
   const id = auth.newId();
-  // Generate verification token (24h expiry)
   const token = require('crypto').randomBytes(32).toString('hex');
   const expires = new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString();
   db.prepare(
     `INSERT INTO users (id, email, password_hash, name, role, is_super_admin, is_verified, verification_token, verification_expires_at)
      VALUES (?, ?, ?, ?, ?, ?, 0, ?, ?)`
   ).run(id, email, auth.hashPassword(password), name, role, isSuperAdmin, token, expires);
-  // Send verification email (async, but we don't await — best-effort)
   sendVerificationEmail(email, name, token).catch((e) => {
     console.error('[email] Failed to send verification:', e.message);
   });
-  // Show "check your email" page
   res.render('auth/check-email', {
     title: 'تحقق من بريدك',
     email,
@@ -72,8 +65,6 @@ router.post('/register', (req, res) => {
     notFound: false,
   });
 });
-
-// Email verification link
 router.get('/verify/:token', (req, res) => {
   const { token } = req.params;
   const user = db.prepare('SELECT * FROM users WHERE verification_token = ?').get(token);
@@ -88,24 +79,22 @@ router.get('/verify/:token', (req, res) => {
     });
   }
   db.prepare('UPDATE users SET is_verified = 1, verification_token = NULL, verification_expires_at = NULL WHERE id = ?').run(user.id);
-  // Auto-login after verification
   const updated = db.prepare('SELECT * FROM users WHERE id = ?').get(user.id);
   auth.issueSession(res, updated);
   res.render('auth/verify-result', { title: 'تم التفعيل', success: true, message: 'تم تفعيل حسابك بنجاح! مرحباً بك في Sport Oriental.' });
 });
-
 // Resend verification email
 router.get('/resend-verification', (req, res) => {
   const email = req.query.email || '';
   if (!email) {
-    return res.render('auth/check-email', { title: 'إعادة إرسال', email: '', devMode: require('../lib/email').isDevMode(), resendDone: false });
+    return res.render('auth/check-email', { title: 'إعادة إرسال', email: '', devMode: require('../lib/email').isDevMode(), resendDone: false, alreadyVerified: false, notFound: false });
   }
   const user = db.prepare('SELECT * FROM users WHERE email = ?').get(email);
   if (!user) {
-    return res.render('auth/check-email', { title: 'إعادة إرسال', email, devMode: require('../lib/email').isDevMode(), resendDone: false, notFound: true });
+    return res.render('auth/check-email', { title: 'إعادة إرسال', email, devMode: require('../lib/email').isDevMode(), resendDone: false, alreadyVerified: false, notFound: true });
   }
   if (user.is_verified) {
-    return res.render('auth/check-email', { title: 'إعادة إرسال', email, devMode: require('../lib/email').isDevMode(), resendDone: true, alreadyVerified: true });
+    return res.render('auth/check-email', { title: 'إعادة إرسال', email, devMode: require('../lib/email').isDevMode(), resendDone: true, alreadyVerified: true, notFound: false });
   }
   const token = require('crypto').randomBytes(32).toString('hex');
   const expires = new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString();
@@ -113,15 +102,12 @@ router.get('/resend-verification', (req, res) => {
   sendVerificationEmail(email, user.name, token).catch((e) => {
     console.error('[email] Failed to resend:', e.message);
   });
-    res.render('auth/check-email', { title: 'إعادة إرسال', email, devMode: require('../lib/email').isDevMode(), resendDone: true, alreadyVerified: false });
+  res.render('auth/check-email', { title: 'إعادة إرسال', email, devMode: require('../lib/email').isDevMode(), resendDone: true, alreadyVerified: false, notFound: false });
 });
-
 router.post('/logout', (req, res) => {
   auth.clearSessionCookie(res);
   res.redirect('/login');
 });
-
-// Account settings: change password
 router.get('/account', auth.requireAuth, (req, res) => {
   const stats = {
     leagues: db.prepare('SELECT COUNT(*) AS n FROM leagues WHERE owner_id = ?').get(req.user.id).n,
@@ -129,7 +115,6 @@ router.get('/account', auth.requireAuth, (req, res) => {
   };
   res.render('auth/account', { title: 'حسابي', user: req.user, stats, error: null, success: req.query.saved || null });
 });
-
 router.post('/account/password', auth.requireAuth, (req, res) => {
   const { currentPassword, newPassword, confirmPassword } = req.body || {};
   const user = db.prepare('SELECT * FROM users WHERE id = ?').get(req.user.id);
@@ -143,7 +128,6 @@ router.post('/account/password', auth.requireAuth, (req, res) => {
     error,
     success: null,
   });
-
   if (!currentPassword || !newPassword || !confirmPassword) {
     return renderWith('كل الحقول مطلوبة');
   }
@@ -163,7 +147,6 @@ router.post('/account/password', auth.requireAuth, (req, res) => {
     .run(auth.hashPassword(newPassword), req.user.id);
   res.redirect('/account?saved=1');
 });
-
 router.post('/account/profile', auth.requireAuth, (req, res) => {
   const { name } = req.body || {};
   if (!name || name.trim().length < 2) {
@@ -182,5 +165,4 @@ router.post('/account/profile', auth.requireAuth, (req, res) => {
     .run(name.trim(), req.user.id);
   res.redirect('/account?saved=1');
 });
-
 module.exports = router;
