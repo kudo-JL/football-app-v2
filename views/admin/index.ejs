@@ -7,6 +7,8 @@
       <% if (query.msg === 'role_updated') { %>✅ تم تحديث دور المستخدم<% } %>
       <% if (query.msg === 'visibility_updated') { %>✅ تم تحديث رؤية الدوري<% } %>
       <% if (query.msg === 'featured_updated') { %>✅ تم تحديث التمييز<% } %>
+      <% if (query.msg === 'verified' && query.target) { %>✅ تم تفعيل <strong><%= query.target %></strong> يدوياً<% } %>
+      <% if (query.msg === 'user_deleted' && query.target) { %>🗑️ تم حذف <strong><%= query.target %></strong> وكل بياناته<% } %>
     </div>
   <% } %>
   <% if (typeof query !== 'undefined' && query.error) { %>
@@ -15,6 +17,9 @@
       <% if (query.error === 'invalid_role') { %>❌ دور غير صالح<% } %>
       <% if (query.error === 'cannot_feature_others') { %>❌ لا يمكنك تمييز دوريات مستخدمين آخرين<% } %>
       <% if (query.error === 'league_not_found') { %>❌ الدوري غير موجود<% } %>
+      <% if (query.error === 'user_not_found') { %>❌ المستخدم غير موجود<% } %>
+      <% if (query.error === 'already_verified') { %>⚠️ المستخدم مفعّل أصلاً<% } %>
+      <% if (query.error === 'cannot_delete_self') { %>❌ لا يمكنك حذف حسابك<% } %>
     </div>
   <% } %>
 
@@ -23,17 +28,17 @@
       <p class="text-xs text-slate-500">المستخدمون</p>
       <p class="mt-1 text-2xl font-bold text-slate-900"><%= stats.users %></p>
     </div>
+    <div class="rounded-xl border border-emerald-200 bg-emerald-50 p-4">
+      <p class="text-xs text-emerald-700">مفعّلون ✅</p>
+      <p class="mt-1 text-2xl font-bold text-emerald-900"><%= stats.verified %></p>
+    </div>
     <div class="rounded-xl border border-amber-200 bg-amber-50 p-4">
-      <p class="text-xs text-amber-700">الأدمن</p>
+      <p class="text-xs text-amber-700">أدمن</p>
       <p class="mt-1 text-2xl font-bold text-amber-900"><%= stats.admins %></p>
     </div>
     <div class="rounded-xl border border-slate-200 bg-white p-4">
       <p class="text-xs text-slate-500">الدوريات</p>
       <p class="mt-1 text-2xl font-bold text-slate-900"><%= stats.leagues %></p>
-    </div>
-    <div class="rounded-xl border border-emerald-200 bg-emerald-50 p-4">
-      <p class="text-xs text-emerald-700">العامة</p>
-      <p class="mt-1 text-2xl font-bold text-emerald-900"><%= stats.publicLeagues %></p>
     </div>
     <div class="rounded-xl border border-slate-200 bg-white p-4">
       <p class="text-xs text-slate-500">الكؤوس</p>
@@ -43,22 +48,41 @@
 
   <section class="mt-10">
     <h2 class="text-xl font-bold text-slate-900 mb-3">👥 المستخدمون (<%= users.length %>)</h2>
+    <% if (user.is_super_admin) { %>
+      <p class="text-xs text-emerald-700 mb-2">🛡️ أنت السوبر أدمن — يمكنك التحقق اليدوي والحذف. أنت أول مستخدم مسجّل.</p>
+    <% } else { %>
+      <p class="text-xs text-slate-500 mb-2">🔒 التحقق اليدوي والحذف متاحان فقط للسوبر أدمن (أول مستخدم مسجّل).</p>
+    <% } %>
     <div class="overflow-x-auto rounded-xl border border-slate-200 bg-white shadow-sm">
       <table class="w-full text-sm">
         <thead>
           <tr class="bg-slate-50 text-xs text-slate-600">
             <th class="px-3 py-2 text-right">الاسم</th>
             <th class="px-3 py-2 text-right">الإيميل</th>
+            <th class="px-3 py-2 text-center">الحالة</th>
             <th class="px-3 py-2 text-center">الدور</th>
+            <th class="px-3 py-2 text-center">الدوريات</th>
             <th class="px-3 py-2 text-right">تاريخ التسجيل</th>
-            <th class="px-3 py-2 text-center">تغيير الدور</th>
+            <th class="px-3 py-2 text-center">إجراءات</th>
           </tr>
         </thead>
         <tbody>
           <% users.forEach(u => { %>
-            <tr class="border-t border-slate-100">
-              <td class="px-3 py-2 font-semibold text-slate-900"><%= u.name %></td>
+            <tr class="border-t border-slate-100 hover:bg-slate-50">
+              <td class="px-3 py-2 font-semibold text-slate-900">
+                <%= u.name %>
+                <% if (u.is_super_admin) { %>
+                  <span class="mr-1 inline-flex items-center gap-0.5 rounded-full bg-emerald-100 px-2 py-0.5 text-[10px] font-semibold text-emerald-800" title="أول مستخدم مسجّل — سوبر أدمن">🛡️ SUPER</span>
+                <% } %>
+              </td>
               <td class="px-3 py-2 text-slate-600"><%= u.email %></td>
+              <td class="px-3 py-2 text-center">
+                <% if (u.is_verified) { %>
+                  <span class="inline-flex items-center gap-1 rounded-full bg-emerald-100 px-2 py-0.5 text-xs font-semibold text-emerald-800">✅ مفعّل</span>
+                <% } else { %>
+                  <span class="inline-flex items-center gap-1 rounded-full bg-amber-100 px-2 py-0.5 text-xs font-semibold text-amber-800">⚠️ غير مفعّل</span>
+                <% } %>
+              </td>
               <td class="px-3 py-2 text-center">
                 <% if (u.role === 'ADMIN') { %>
                   <span class="rounded-full bg-amber-100 px-2 py-0.5 text-xs font-semibold text-amber-800">👑 ADMIN</span>
@@ -66,19 +90,46 @@
                   <span class="rounded-full bg-slate-100 px-2 py-0.5 text-xs font-medium text-slate-700">مستخدم</span>
                 <% } %>
               </td>
+              <td class="px-3 py-2 text-center text-xs text-slate-600">
+                <% if (u.league_count > 0) { %>
+                  <a href="/leagues?owner=<%= u.id %>" class="font-semibold text-emerald-700 hover:underline"><%= u.league_count %></a>
+                <% } else { %>
+                  <span class="text-slate-400">0</span>
+                <% } %>
+              </td>
               <td class="px-3 py-2 text-xs text-slate-500"><%= u.created_at %></td>
               <td class="px-3 py-2 text-center">
-                <% if (u.id === user.id) { %>
-                  <span class="text-xs text-slate-400">أنت</span>
-                <% } else { %>
-                  <form action="/admin/users/<%= u.id %>/role" method="POST" class="inline-flex gap-1">
-                    <select name="role" class="rounded border border-slate-300 px-2 py-1 text-xs">
-                      <option value="user" <%= u.role === 'user' ? 'selected' : '' %>>مستخدم</option>
-                      <option value="ADMIN" <%= u.role === 'ADMIN' ? 'selected' : '' %>>ADMIN</option>
-                    </select>
-                    <button class="rounded bg-emerald-600 px-2 py-1 text-xs text-white hover:bg-emerald-700">حفظ</button>
-                  </form>
-                <% } %>
+                <div class="inline-flex flex-wrap items-center justify-center gap-1">
+                  <%# Change role form %>
+                  <% if (u.id === user.id) { %>
+                    <span class="text-xs text-slate-400">أنت</span>
+                  <% } else { %>
+                    <form action="/admin/users/<%= u.id %>/role" method="POST" class="inline-flex gap-1">
+                      <select name="role" class="rounded border border-slate-300 px-1.5 py-0.5 text-xs">
+                        <option value="user" <%= u.role === 'user' ? 'selected' : '' %>>مستخدم</option>
+                        <option value="ADMIN" <%= u.role === 'ADMIN' ? 'selected' : '' %>>ADMIN</option>
+                      </select>
+                      <button class="rounded bg-slate-700 px-2 py-0.5 text-xs text-white hover:bg-slate-800" title="تغيير الدور">حفظ</button>
+                    </form>
+                  <% } %>
+
+                  <%# Manual verify (super admin only, unverified users) %>
+                  <% if (user.is_super_admin && !u.is_verified && u.id !== user.id) { %>
+                    <form action="/admin/users/<%= u.id %>/verify" method="POST" class="inline">
+                      <button
+                        onclick="return confirm('تفعيل يدوي للمستخدم <%= u.email %>؟\n\n(يُستعمل فقط لو فقد إيميله ولا يستطيع استلام رابط التفعيل)')"
+                        class="rounded bg-emerald-600 px-2 py-0.5 text-xs text-white hover:bg-emerald-700"
+                        title="تفعيل يدوي (بدون إيميل)">✅ فعّل</button>
+                    </form>
+                  <% } %>
+
+                  <%# Delete user (super admin only, not self) %>
+                  <% if (user.is_super_admin && u.id !== user.id) { %>
+                    <a href="/admin/users/<%= u.id %>/delete"
+                       class="rounded border border-red-300 bg-white px-2 py-0.5 text-xs font-semibold text-red-700 hover:bg-red-50"
+                       title="حذف المستخدم وكل بياناته (لا يمكن التراجع)">🗑️ حذف</a>
+                  <% } %>
+                </div>
               </td>
             </tr>
           <% }); %>

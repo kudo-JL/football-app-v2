@@ -4,3 +4,6 @@ data/*.db-*
 .env
 .DS_Store
 *.log
+v3.4.0/
+*.bak-*.ejs
+v3.4.0-update.zip
