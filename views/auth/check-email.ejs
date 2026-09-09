@@ -1,0 +1,47 @@
+<div class="max-w-lg mx-auto">
+  <div class="rounded-2xl border border-amber-200 bg-amber-50 p-8 text-center">
+    <div class="text-6xl mb-4">📧</div>
+    <h1 class="text-2xl font-bold text-slate-900 mb-3">تحقق من بريدك الإلكتروني</h1>
+    <p class="text-slate-700 leading-relaxed mb-4">
+      أرسلنا رابط تفعيل إلى:<br>
+      <strong class="text-amber-800"><%= email %></strong>
+    </p>
+    <p class="text-sm text-slate-600 mb-6">
+      اضغط على الرابط في الرسالة لتفعيل حسابك. الرابط صالح لمدة 24 ساعة.
+    </p>
+
+    <% if (devMode) { %>
+      <div class="rounded-lg border-2 border-dashed border-amber-400 bg-white p-4 text-left text-sm">
+        <p class="font-semibold text-amber-800 mb-2">🛠️ وضع التطوير (DEV MODE):</p>
+        <p class="text-slate-600 mb-2">بما إن SMTP غير مفعّل، الإيميل لم يُرسل فعلياً. ابحث في terminal عن رابط التفعيل.</p>
+        <p class="text-slate-600">أو <a href="/resend-verification?email=<%= encodeURIComponent(email) %>" class="text-emerald-600 hover:underline font-medium">اضغط هنا لإعادة الإرسال</a> وشوف الـ terminal.</p>
+      </div>
+    <% } else { %>
+      <p class="text-sm text-slate-600">
+        لم يصل إيميل؟ <a href="/resend-verification?email=<%= encodeURIComponent(email) %>" class="text-emerald-600 hover:underline font-medium">إعادة الإرسال</a>
+      </p>
+    <% } %>
+
+    <% if (resendDone) { %>
+      <div class="mt-4 rounded-lg bg-emerald-100 border border-emerald-200 p-3 text-sm text-emerald-800">
+        ✅ تم إرسال إيميل جديد. تحقق من بريدك.
+      </div>
+    <% } %>
+
+    <% if (alreadyVerified) { %>
+      <div class="mt-4 rounded-lg bg-blue-100 border border-blue-200 p-3 text-sm text-blue-800">
+        ℹ️ هذا الحساب مفعل بالفعل. <a href="/login" class="font-medium underline">سجل دخول</a>
+      </div>
+    <% } %>
+
+    <% if (notFound) { %>
+      <div class="mt-4 rounded-lg bg-red-100 border border-red-200 p-3 text-sm text-red-800">
+        ❌ لا يوجد حساب بهذا الإيميل.
+      </div>
+    <% } %>
+  </div>
+
+  <p class="mt-6 text-center text-sm text-slate-500">
+    <a href="/" class="hover:text-slate-700 hover:underline">← العودة للرئيسية</a>
+  </p>
+</div>
