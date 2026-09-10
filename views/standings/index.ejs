@@ -107,7 +107,7 @@
 
     <%# Home/Away splits %>
     <% 
-      const hasHomeAway = overall.some(t => t.home.played > 0 || t.away.played > 0);
+      const hasHomeAway = (overall && typeof overall.some === 'function') ? overall.some(t => t && t.home && t.home.played > 0 || t && t.away && t.away.played > 0) : false;
     %>
     <% if (hasHomeAway) { %>
       <section class="mt-10">
