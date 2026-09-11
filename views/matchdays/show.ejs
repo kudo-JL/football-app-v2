@@ -36,12 +36,12 @@
               <div class="flex items-center gap-2 min-w-0 flex-1 justify-end">
                 <span class="text-sm font-semibold text-slate-900 truncate"><%= m.home_name %></span>
                 <% if (m.home_logo) { %>
-  <img src="<%= m.home_logo %>" alt="<%= m.home_name %>" class="h-7 w-7 shrink-0 rounded-full object-cover border" onerror="this.style.display='none'">
-<% } else { %>
-  <div class="h-7 w-7 shrink-0 rounded-full text-[10px] font-bold text-white flex items-center justify-center" style="background-color: <%= m.home_color || '#64748b' %>">
-    <%= (m.home_short || m.home_name || '?').slice(0, 2).toUpperCase() %>
-  </div>
-<% } %>
+                  <img src="<%= m.home_logo %>" alt="<%= m.home_name %>" class="h-7 w-7 shrink-0 rounded-full object-cover border" onerror="this.style.display='none'">
+                <% } else { %>
+                  <div class="h-7 w-7 shrink-0 rounded-full text-[10px] font-bold text-white flex items-center justify-center" style="background-color: <%= m.home_color || '#64748b' %>">
+                    <%= (m.home_short || m.home_name || '?').slice(0, 2).toUpperCase() %>
+                  </div>
+                <% } %>
               </div>
 
               <!-- Score (CENTER) -->
@@ -57,9 +57,13 @@
 
               <!-- Away team (LEFT in RTL) -->
               <div class="flex items-center gap-2 min-w-0 flex-1">
-                <div class="h-7 w-7 shrink-0 rounded-full text-[10px] font-bold text-white flex items-center justify-center" style="background-color: <%= m.away_color || '#64748b' %>">
-                  <%= (m.away_short || m.away_name || '?').slice(0, 2).toUpperCase() %>
-                </div>
+                <% if (m.away_logo) { %>
+                  <img src="<%= m.away_logo %>" alt="<%= m.away_name %>" class="h-7 w-7 shrink-0 rounded-full object-cover border" onerror="this.style.display='none'">
+                <% } else { %>
+                  <div class="h-7 w-7 shrink-0 rounded-full text-[10px] font-bold text-white flex items-center justify-center" style="background-color: <%= m.away_color || '#64748b' %>">
+                    <%= (m.away_short || m.away_name || '?').slice(0, 2).toUpperCase() %>
+                  </div>
+                <% } %>
                 <span class="text-sm font-semibold text-slate-900 truncate"><%= m.away_name %></span>
               </div>
             </a>
