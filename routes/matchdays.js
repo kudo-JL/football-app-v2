@@ -53,7 +53,7 @@ router.get('/leagues/:leagueId/sections/:sectionId/matchdays/:id', auth.optional
   const matches = db
     .prepare(
       SELECT m.*, ht.name AS home_name, ht.short_name AS home_short, ht.color AS home_color, ht.logo AS home_logo,
-        at.name AS away_name, at.short_name AS away_short, at.color AS away_color, at.logo AS away_logo
+                at.name AS away_name, at.short_name AS away_short, at.color AS away_color, at.logo AS away_logo, at.logo AS away_logo
        FROM matches m
        JOIN teams ht ON ht.id = m.home_team_id
        JOIN teams at ON at.id = m.away_team_id
