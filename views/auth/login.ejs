@@ -15,7 +15,10 @@
 <body class="min-h-screen bg-gradient-to-l from-emerald-600 to-emerald-800 flex items-center justify-center px-6">
   <div class="w-full max-w-md">
     <div class="rounded-2xl bg-white p-8 shadow-2xl">
-      <h1 class="text-3xl font-bold text-slate-900">⚽ <%= appName %></h1>
+            <div class="flex items-center justify-between gap-3">
+        <h1 class="text-3xl font-bold text-slate-900">⚽ <%= appName %></h1>
+        <a href="/" class="rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-xs font-medium text-slate-600 hover:bg-slate-50">← الرئيسية</a>
+      </div>
       <p class="mt-1 text-sm text-slate-600">تسجيل الدخول</p>
 
       <% if (error) { %>
