@@ -73,7 +73,10 @@ router.post('/leagues/:leagueId/sections/:sectionId/teams/:id/edit', auth.requir
   const section = getEditableSection(req.params.leagueId, req.params.sectionId, req.user);
   if (!section) return res.status(404).send('القسم غير موجود');
   const { name, shortName, logo, color, founded, status, pointDeduction, deductionReason } = req.body || {};
-  let finalLogo = req.file ? `/uploads/teams/${req.file.filename}` : (logo || '');
+    // Preserve existing logo if no new file/URL provided
+  let finalLogo = req.file
+    ? `/uploads/teams/${req.file.filename}`
+    : ((logo && logo.trim()) ? logo.trim() : (req.body.currentLogo || ''));
   const deduction = parseInt(pointDeduction) || 0;
   db.prepare(
     `UPDATE teams SET name=?, short_name=?, logo=?, color=?, founded=?, status=?, point_deduction=?, deduction_reason=?, updated_at=datetime('now') WHERE id=?`
