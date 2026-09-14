@@ -14,6 +14,8 @@
     <div class="flex flex-wrap gap-2">
       <% if (teams.length >= 2) { %>
         <a href="/leagues/<%= league.id %>/sections/<%= section.id %>/standings" class="rounded-lg bg-emerald-600 px-4 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-emerald-700">📊 ترتيب متقدم</a>
+        <a href="/leagues/<%= league.id %>/sections/<%= section.id %>/matches" class="rounded-lg bg-blue-600 px-4 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-blue-700">⚽ المباريات والنتائج</a>
+        <a href="/leagues/<%= league.id %>/sections/<%= section.id %>/schedule" class="rounded-lg bg-amber-600 px-4 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-amber-700">📅 البرنامج العام</a>
       <% } %>
       <a href="/leagues/<%= league.id %>/sections/<%= section.id %>/edit" class="rounded-lg border border-slate-300 bg-white px-4 py-2.5 text-sm font-semibold text-slate-700 hover:bg-slate-50">✏️ تعديل</a>
       <form action="/leagues/<%= league.id %>/sections/<%= section.id %>/delete" method="POST" onsubmit="return confirm('حذف القسم وكل فرقه؟')" class="inline">
@@ -69,55 +71,6 @@
             <span class="shrink-0 rounded-full px-2.5 py-1 text-xs font-medium <%= t.status === 'RELEGATED' ? 'bg-red-100 text-red-800 ring-1 ring-red-300' : t.status === 'PROMOTED' ? 'bg-emerald-100 text-emerald-800 ring-1 ring-emerald-300' : 'bg-slate-100 text-slate-700' %>"><%= t.status === 'PROMOTED' ? 'صاعد' : t.status === 'RELEGATED' ? 'نازل' : 'نشط' %></span>
             <a href="/leagues/<%= league.id %>/sections/<%= section.id %>/teams/<%= t.id %>/players" class="shrink-0 rounded-lg border border-slate-300 bg-white px-3 py-1.5 text-xs font-medium text-slate-700 hover:bg-slate-50" title="إدارة اللاعبين" onclick="event.stopPropagation()">👥</a>
           </div>
-        <% }); %>
-      </div>
-    <% } %>
-  </section>
-
-  <section class="mt-10">
-    <div class="flex items-center justify-between mb-4 flex-wrap gap-2">
-      <h2 class="text-xl font-bold text-slate-900">الجولات (<%= matchdays.length %>)</h2>
-      <div class="flex gap-2 flex-wrap">
-        <% if (teams.length >= 2) { %>
-          <a href="/leagues/<%= league.id %>/sections/<%= section.id %>/h2h" class="rounded-lg border border-purple-300 bg-white px-4 py-2 text-sm font-semibold text-purple-700 hover:bg-purple-50">🤝 المواجهات المباشرة</a>
-        <% } %>
-        <% if (matchdays.length > 0) { %>
-          <button onclick="document.getElementById('resetMatchesModal').classList.remove('hidden')" class="rounded-lg border border-red-300 bg-white px-4 py-2 text-sm font-semibold text-red-700 hover:bg-red-50">🗑️ حذف كل المباريات</button>
-        <% } %>
-        <form action="/leagues/<%= league.id %>/sections/<%= section.id %>/matchdays/new" method="POST" class="flex gap-2">
-          <input type="text" name="name" required placeholder="اسم الجولة (مثل: الجولة 1)" class="rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm shadow-sm focus:border-emerald-500 focus:outline-none focus:ring-1 focus:ring-emerald-500">
-          <button class="rounded-lg bg-emerald-600 px-4 py-2 text-sm font-semibold text-white hover:bg-emerald-700">+ جولة</button>
-        </form>
-      </div>
-    </div>
-
-    <% if (matchdays.length === 0) { %>
-      <p class="text-sm text-slate-500">لا توجد جولات بعد. <span class="text-purple-600">جرّب زر توليد الجدول الكامل</span> بعد إضافة فريقين.</p>
-    <% } else { %>
-      <div class="space-y-2">
-        <% matchdays.forEach(m => { %>
-          <%
-            var status = m.match_count === 0 ? 'empty' : (m.finished_count === m.match_count ? 'completed' : (m.finished_count > 0 ? 'partial' : 'pending'));
-            var statusBadge = '';
-            var statusIcon = '';
-            if (status === 'completed') { statusBadge = '<span class="rounded-full bg-emerald-100 px-2.5 py-0.5 text-[11px] font-semibold text-emerald-800">✓ مكتملة</span>'; statusIcon = '✅'; }
-            else if (status === 'partial') { statusBadge = '<span class="rounded-full bg-amber-100 px-2.5 py-0.5 text-[11px] font-semibold text-amber-800">جزئية ' + m.finished_count + '/' + m.match_count + '</span>'; statusIcon = '⏳'; }
-            else if (status === 'pending') { statusBadge = '<span class="rounded-full bg-slate-100 px-2.5 py-0.5 text-[11px] font-semibold text-slate-600">لم تبدأ</span>'; statusIcon = '🕐'; }
-            else { statusBadge = '<span class="rounded-full bg-slate-100 px-2.5 py-0.5 text-[11px] font-semibold text-slate-500">فارغة</span>'; statusIcon = '📭'; }
-          %>
-          <a href="/leagues/<%= league.id %>/sections/<%= section.id %>/matchdays/<%= m.id %>" class="flex items-center justify-between rounded-xl border border-slate-200 bg-white p-4 shadow-sm hover:shadow-md">
-            <div class="flex items-center gap-3">
-              <span class="text-2xl"><%= statusIcon %></span>
-              <div>
-                <h3 class="font-semibold text-slate-900"><%= m.name %></h3>
-                <p class="text-sm text-slate-500"><%= m.match_count %> مباراة · <%= m.finished_count %> منتهية</p>
-              </div>
-            </div>
-            <div class="flex items-center gap-3">
-              <%- statusBadge %>
-              <span class="text-sm text-slate-400">←</span>
-            </div>
-          </a>
         <% }); %>
       </div>
     <% } %>
