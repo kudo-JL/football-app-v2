@@ -35,11 +35,7 @@
     <div class="flex items-center justify-between mb-4 flex-wrap gap-2">
       <h2 class="text-xl font-bold text-slate-900">الفرق (<%= teams.length %>)</h2>
       <div class="flex gap-2 flex-wrap">
-        <% if (teams.length >= 2) { %>
-          <button onclick="document.getElementById('generateFixtureModal').classList.remove('hidden')" class="rounded-lg bg-purple-600 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-purple-700">⚡ توليد الجدول الكامل</button>
-        <% } %>
-        <a href="/leagues/<%= league.id %>/sections/<%= section.id %>/teams/new" class="rounded-lg bg-emerald-600 px-4 py-2 text-sm font-semibold text-white hover:bg-emerald-700">+ فريق جديد</a>
-      </div>
+                <a href="/leagues/<%= league.id %>/sections/<%= section.id %>/teams/new" class="rounded-lg bg-emerald-600 px-4 py-2 text-sm font-semibold text-white hover:bg-emerald-700">+ فريق جديد</a>      </div>
     </div>
 
     <% if (teams.length === 0) { %>
