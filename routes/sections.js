@@ -86,7 +86,60 @@ router.get('/leagues/:leagueId/sections/:id', auth.optionalAuth, (req, res) => {
     error, generated, canEdit, user: req.user || null,
   });
 });
+// Matches page — flat list of all matches with matchday navigation
+router.get('/leagues/:leagueId/sections/:id/matches', auth.optionalAuth, (req, res) => {
+  const league = getViewableLeague(req.params.leagueId, req.user);
+  if (!league) return res.status(404).send('الدوري غير موجود');
+  const section = getSection(league.id, req.params.id);
+  if (!section) return res.status(404).send('القسم غير موجود');
 
+  const teams = db
+    .prepare('SELECT id, name, short_name, color, logo FROM teams WHERE section_id = ? ORDER BY name')
+    .all(section.id);
+
+  // Fetch all matchdays with their matches in a single query
+  const matchdays = db
+    .prepare(
+      `SELECT *,
+              (SELECT COUNT(*) FROM matches WHERE matchday_id = matchdays.id) AS match_count,
+              (SELECT COUNT(*) FROM matches WHERE matchday_id = matchdays.id AND status = 'FINISHED') AS finished_count
+       FROM matchdays
+       WHERE section_id = ?
+       ORDER BY "order", COALESCE(scheduled_at, '')`
+    )
+    .all(section.id);
+
+  // For each matchday, fetch the matches with team info
+  matchdays.forEach(m => {
+    m.matches = db
+      .prepare(
+        `SELECT m.id, m.matchday_id, m.home_team_id, m.away_team_id, m.home_score, m.away_score,
+                m.status, m.scheduled_at, m.venue, m.stream_url,
+                ht.name AS home_name, ht.short_name AS home_short, ht.color AS home_color, ht.logo AS home_logo,
+                at.name AS away_name, at.short_name AS away_short, at.color AS away_color, at.logo AS away_logo
+         FROM matches m
+         JOIN teams ht ON ht.id = m.home_team_id
+         JOIN teams at ON at.id = m.away_team_id
+         WHERE m.matchday_id = ?
+         ORDER BY COALESCE(m.scheduled_at, ''), m.created_at`
+      )
+      .all(m.id);
+  });
+
+  const totalMatches = matchdays.reduce((sum, m) => sum + m.matches.length, 0);
+
+  const canEdit = auth.canEditLeague(req.user, league);
+  res.render('sections/matches', {
+    title: 'المباريات - ' + section.name,
+    league,
+    section,
+    teams,
+    matchdays,
+    matches: { length: totalMatches },
+    canEdit,
+    user: req.user || null,
+  });
+});
 // Standings (public if league is public)
 router.get('/leagues/:leagueId/sections/:id/standings', auth.optionalAuth, (req, res) => {
   const league = getViewableLeague(req.params.leagueId, req.user);
