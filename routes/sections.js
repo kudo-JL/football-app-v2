@@ -180,6 +180,38 @@ router.get('/leagues/:leagueId/sections/:id/standings', auth.optionalAuth, (req,
     },
     additionalStats,
     canEdit,
+       user: req.user || null,
+  });
+});
+
+// Schedule page — overall season grid (placeholder for now)
+router.get('/leagues/:leagueId/sections/:id/schedule', auth.optionalAuth, (req, res) => {
+  const league = getViewableLeague(req.params.leagueId, req.user);
+  if (!league) return res.status(404).send('الدوري غير موجود');
+  const section = getSection(league.id, req.params.id);
+  if (!section) return res.status(404).send('القسم غير موجود');
+
+  const teams = db
+    .prepare('SELECT id, name, short_name, color, logo FROM teams WHERE section_id = ? ORDER BY name')
+    .all(section.id);
+
+  const matchdays = db
+    .prepare(
+      `SELECT *,
+              (SELECT COUNT(*) FROM matches WHERE matchday_id = matchdays.id) AS match_count
+       FROM matchdays
+       WHERE section_id = ?
+       ORDER BY "order", COALESCE(scheduled_at, '')`
+    )
+    .all(section.id);
+
+  const totalMatches = db
+    .prepare('SELECT COUNT(*) AS n FROM matches m JOIN matchdays md ON md.id = m.matchday_id WHERE md.section_id = ?')
+    .get(section.id).n;
+
+  res.render('sections/schedule', {
+    title: 'البرنامج العام - ' + section.name,
+    league, section, teams, matchdays, totalMatches,
     user: req.user || null,
   });
 });
